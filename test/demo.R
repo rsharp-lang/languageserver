@@ -15,4 +15,11 @@
 # print([x, y]);
 # # [2] 5 5
 # ```
+;
 
+#region "code"
+const hello_notebook as function() {
+	# comment internal
+	return "world";
+}
+#end region

@@ -1,4 +1,6 @@
 ﻿
+Imports SMRUCC.Rsharp.Interpreter
+Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine
 Imports SMRUCC.Rsharp.Language.TokenIcer
 Imports SMRUCC.Rsharp.Runtime.Components
 
@@ -8,7 +10,7 @@ Imports SMRUCC.Rsharp.Runtime.Components
 Public Class Notebook
 
     Public Shared Function fromRscript(rscript As Rscript) As Notebook
-        Dim tokens As Token() = rscript.GetTokens
+        Dim lines As Expression() = Expression.ParseLines(rscript, keepsCommentLines:=True).ToArray
 
         Return New Notebook
     End Function

@@ -22,4 +22,6 @@ const hello_notebook as function() {
 	# comment internal
 	return "world";
 }
+
+print(hello_notebook);
 #end region

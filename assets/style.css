@@ -1,3 +1,11 @@
 .output {
     color:indianred;
 }
+
+.code-input {
+    background-color: lavender;
+}
+
+.code {
+    background-color: lightgoldenrodyellow;
+}

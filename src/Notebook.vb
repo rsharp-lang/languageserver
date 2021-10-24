@@ -56,7 +56,7 @@ Public Class Notebook
                     Case Annotations.EndRegion
                         regionMark = False
                         blockList += New RCodeBlock With {
-                            .block = codeBlock.ToArray,
+                            .block = codeBlock.PopAll,
                             .region = New IntRange(
                                 min:=start.line - 1,
                                 max:=DirectCast(line, CodeComment).span.line - 1

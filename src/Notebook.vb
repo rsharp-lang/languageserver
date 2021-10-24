@@ -134,6 +134,6 @@ Public Class RCodeBlock : Inherits NoteBlock
     End Function
 
     Public Overrides Function ToHtml(render As HtmlWriter) As String
-        Return sprintf(<pre><code>%s</code></pre>, text)
+        Return sprintf(<code><pre>%s</pre></code>, text)
     End Function
 End Class

@@ -3,4 +3,8 @@
 ''' </summary>
 Public Class Interpreter
 
+    Public Function GetHtmlOutput(code As RCodeBlock) As String
+
+    End Function
+
 End Class

@@ -39,3 +39,10 @@ str(list(
 ));
 #end region
 ;
+
+### image test
+;
+
+#region "image test"
+plot(runif(20), runif(20));
+#end region

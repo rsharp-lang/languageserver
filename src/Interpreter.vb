@@ -1,5 +1,7 @@
 Imports System.IO
 Imports System.Text
+Imports Microsoft.VisualBasic.Imaging.Driver
+Imports Microsoft.VisualBasic.Net.Http
 Imports SMRUCC.Rsharp.Interpreter
 Imports SMRUCC.Rsharp.Runtime
 
@@ -22,7 +24,19 @@ Public Class Interpreter
             .RedirectOutput(text, OutputEnvironments.Html) _
             .Run(program)
 
-        Call Rscript.handleResult(result, REngine.globalEnvir, program)
+        If TypeOf result Is ImageData Then
+            Using imgBuffer As New MemoryStream
+                Call DirectCast(result, ImageData).Save(imgBuffer)
+                Call imgBuffer.Flush()
+                Call imgBuffer.Seek(0, SeekOrigin.Begin)
+                Call text.WriteLine(
+                    <div>
+                        <img class="output-image" src=<%= $"data:image/png;charset=ascii;base64,{imgBuffer.ToBase64String}" %>/>
+                    </div>)
+            End Using
+        Else
+            Call Rscript.handleResult(result, REngine.globalEnvir, program)
+        End If
 
         Call text.Flush()
         Call text.Dispose()

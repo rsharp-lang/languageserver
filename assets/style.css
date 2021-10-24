@@ -2,6 +2,10 @@
     color:indianred;
 }
 
+.output-image {
+    width: 60%;
+}
+
 .code-input {
     background-color: lavender;
 }
@@ -9,3 +13,4 @@
 .code {
     background-color: lightgoldenrodyellow;
 }
+

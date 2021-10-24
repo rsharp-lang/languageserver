@@ -23,5 +23,7 @@ const hello_notebook as function() {
 	return "world";
 }
 
-print(hello_notebook);
+print(hello_notebook());
+print(runif(101) * 99);
+
 #end region

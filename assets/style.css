@@ -7,7 +7,9 @@
 }
 
 .code-input {
-    background-color: lavender;
+    background-color: rgb(228, 228, 228);
+    max-width: 65%;
+    border-left:steelblue ;
 }
 
 .code {
@@ -19,14 +21,30 @@
     max-width: 1200px;
     width: 100%;
     clear: both;
-    margin: 0 auto;
-    text-align: left;
+    /* margin: 0 auto; */
+    margin-left: 10%;
     overflow: hidden;
     font-size: 1.3em;
+    padding: 25px;
+    width: 98.9999%;
+    box-shadow: 0.4em 0.4em 0.5em rgb(0 0 0 / 30%);
+    margin-right: 1%;
+    float: left;
+    background-color: #fff;
+    overflow: hidden;
 }
 
 body {
     font: 62.5%/1.3846 arial,helvetica,clean,sans-serif;
     background-color: #ccc;
-    margin: 0;
+}
+
+h1 {
+    color: #985735;
+    background-color: #fafafa;
+    border-top: .2em solid #f7f7f7;
+    border-bottom: .2em solid #f7f7f7;
+    padding-top: .3em;
+    padding-bottom: .3em;
+    padding-left: 13px;
 }

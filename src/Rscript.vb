@@ -36,7 +36,9 @@ Public Module RscriptEngine
                         </style>
                     </head>
                     <body>
-                        %s
+                        <div class="notebook">
+                            %s
+                        </div>
                     </body>
                 </html>, style, content)
     End Function

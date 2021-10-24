@@ -14,3 +14,19 @@
     background-color: lightgoldenrodyellow;
 }
 
+.notebook {
+    min-width: 800px;
+    max-width: 1200px;
+    width: 100%;
+    clear: both;
+    margin: 0 auto;
+    text-align: left;
+    overflow: hidden;
+    font-size: 1.3em;
+}
+
+body {
+    font: 62.5%/1.3846 arial,helvetica,clean,sans-serif;
+    background-color: #ccc;
+    margin: 0;
+}

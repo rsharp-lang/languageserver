@@ -19,7 +19,12 @@ Public Class HtmlWriter
             Call html.AppendLine()
 
             If TypeOf block Is RCodeBlock Then
-                Call html.AppendLine(sprintf(<div class="output">%s</div>, session.GetHtmlOutput(block)))
+                Call html.AppendLine(sprintf(
+                    <div class="output">
+                        <code>
+                            <pre>%s</pre>
+                        </code>
+                    </div>, session.GetHtmlOutput(block)))
                 Call html.AppendLine("<hr />")
             Else
                 Call html.AppendLine("<br />")

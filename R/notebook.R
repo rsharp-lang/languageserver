@@ -1,7 +1,7 @@
 const pipHtml as function(rscript) {
     const css as string = system.file("assets/style.css", package = "Rnotebook");
 
-    if (typeof rscript == "string") {
+    if (typeof rscript is "string") {
         rscript = engine::parse(rscript);
     }
 

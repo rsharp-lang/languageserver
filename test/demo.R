@@ -18,11 +18,17 @@
 ;
 
 #region "code"
+
+#' Demo of function docs
+#' 
+#' @return this function returns nothing
+#' 
 const hello_notebook as function() {
   # comment internal
   return "world";
 }
 
+# show results
 print(hello_notebook());
 print(runif(101) * 99);
 
@@ -32,18 +38,44 @@ print(runif(101) * 99);
 ### list dump test
 ;
 
-#region "list structrue"
+#region "structrue dump test"
+
+# test of output structure dump
+# of a list
 str(list(
   seq = 1:50 step 0.3,
   logical = TRUE
 ));
+
+const df = data.frame(
+  x     = runif(10),
+  y     = runif(10),
+  z     = (runif(10) + 5) ^ 2,
+  str   = "A",
+  logic = FALSE
+);
+
+# previews of the data table and then view of the structures:
+print(head(df));
+str(df);
+
 #end region
 ;
 
 ### image test
+#
+# the image outputs of the ``R#`` code will be encoded as
+# base64 string and then embbled as image tag in the generated
+# html document code.
 ;
 
 #region "image test"
-plot(runif(20), runif(20));
+
+# scatter plot test
+plot(runif(20), runif(20), 
+  background = "white", 
+  grid.fill  = "white", 
+  color      = "green"
+);
 #end region
 ;

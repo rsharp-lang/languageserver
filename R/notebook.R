@@ -6,6 +6,6 @@ const pipHtml as function(rscript) {
     }
 
     rscript 
-    |> toHtml(style = css)
+    |> toHtml(style = readText(css))
     ;
 }

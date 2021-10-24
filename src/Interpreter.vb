@@ -34,14 +34,20 @@ Public Class Interpreter
                         <img class="output-image" src=<%= $"data:image/png;charset=ascii;base64,{imgBuffer.ToBase64String}" %>/>
                     </div>)
             End Using
+
+            Call text.Flush()
+            Call text.Dispose()
+
+            Return Encoding.UTF8.GetString(buffer.ToArray)
         Else
             Call Rscript.handleResult(result, REngine.globalEnvir, program)
+            Call text.Flush()
+            Call text.Dispose()
+
+            Return Encoding.UTF8 _
+                .GetString(buffer.ToArray) _
+                .Replace("<", "&lt;")
         End If
-
-        Call text.Flush()
-        Call text.Dispose()
-
-        Return Encoding.UTF8.GetString(buffer.ToArray)
     End Function
 
 End Class

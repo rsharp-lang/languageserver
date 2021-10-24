@@ -1,7 +1,14 @@
-# # H1 title
+# # Demo for R# notebook
 #
 # this is an example of write ``R#`` notebook document, just like write
 # a regular R# script at here.
+#
+# ## markdown document block in R# notebook
+#
+# the syntax of the markdown document block in the R# notebook just like 
+# write a normal markdown document and the document text is a regular block
+# code comments in R script. Every markdown document block in a R# notebook
+# should be end with a single ``;`` symbol.
 #
 # ## demo R code block in notebook
 #
@@ -9,12 +16,21 @@
 # will not run when generate R notebook html document view:
 #
 # ```r
+# #region "code block name"
+#
 # # demo of R# code
 # const [x, y] as integer = [5, 5];
 #
 # print([x, y]);
 # # [2] 5 5
+# 
+# # end region
+# ;
 # ```
+#
+# End of a code block in the R# notebook document code, should be ends with a 
+# single ``;`` symbol too. 
+#
 ;
 
 #region "code"
@@ -36,6 +52,8 @@ print(runif(101) * 99);
 ;
 
 ### list dump test
+#
+# just test the ``str`` object structure inspecter function in R language is work or not at here:
 ;
 
 #region "structrue dump test"
@@ -75,7 +93,9 @@ str(df);
 plot(runif(20), runif(20), 
   background = "white", 
   grid.fill  = "white", 
-  color      = "green"
+  color      = "skyblue",
+  point_size = 23,
+  shape      = "Triangle" 
 );
 #end region
 ;

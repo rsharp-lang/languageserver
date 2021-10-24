@@ -15,8 +15,18 @@ markdown document in R# notebook is a kind of regular R# language comment block.
 # will be treated as markdown document code.
 # the prefix of the R# comment hash symbol will be removed from 
 # rendering of the markdown document to html view automatically.
+;
 ```
+
+block comment in R# notebook should be end with a single ``;`` terminator character.
 
 ### 2. R# code
 
 any non-comment part will be treated as normal R# code when displayed in the notebook.
+
+```
+#region "code"
+code_here();
+#end region
+;
+```

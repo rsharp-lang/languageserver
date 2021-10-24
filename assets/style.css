@@ -3,13 +3,17 @@
 }
 
 .output-image {
-    width: 60%;
+    width: 50%;
 }
 
 .code-input {
-    background-color: rgb(228, 228, 228);
+    background-color: rgb(240, 240, 240);
+    color:rgb(2, 41, 43);
     max-width: 65%;
-    border-left:steelblue ;
+    position: relative;
+    background-color: #e1f3f8;
+    border-left: 8px solid #02bfe7;
+    padding: 5px;
 }
 
 .code {
@@ -18,11 +22,11 @@
 
 .notebook {
     min-width: 800px;
-    max-width: 1200px;
+    max-width: 1024px;
     width: 100%;
     clear: both;
     /* margin: 0 auto; */
-    margin-left: 10%;
+    margin-left: 8%;
     overflow: hidden;
     font-size: 1.3em;
     padding: 25px;
@@ -39,7 +43,7 @@ body {
     background-color: #ccc;
 }
 
-h1 {
+h1, h2 {
     color: #985735;
     background-color: #fafafa;
     border-top: .2em solid #f7f7f7;

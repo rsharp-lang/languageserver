@@ -6,7 +6,7 @@ Imports Microsoft.VisualBasic.Text
 Imports Microsoft.VisualBasic.Text.Xml
 Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine
 Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine.ExpressionSymbols
-Imports SMRUCC.Rsharp.Runtime.Components
+Imports R = SMRUCC.Rsharp.Runtime.Components.Rscript
 
 ''' <summary>
 ''' A notebook data object which is parsed from the R# script.
@@ -36,7 +36,7 @@ Public Class Notebook
         Return sb.ToString
     End Function
 
-    Public Shared Function fromRscript(rscript As Rscript) As Notebook
+    Public Shared Function fromRscript(rscript As R) As Notebook
         Dim lines As Expression() = Expression.ParseLines(rscript, keepsCommentLines:=True).ToArray
         Dim blockList As New List(Of NoteBlock)
         Dim regionMark As Boolean = False

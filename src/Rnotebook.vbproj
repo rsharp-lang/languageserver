@@ -55,4 +55,6 @@
     </None>
   </ItemGroup>
 
+  <Import Project="..\..\..\R-sharp\studio\Rstudio.common\Rstudio.common.projitems" Label="Shared" />
+
 </Project>

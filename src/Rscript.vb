@@ -2,7 +2,7 @@
 Imports Microsoft.VisualBasic.CommandLine.Reflection
 Imports Microsoft.VisualBasic.Linq
 Imports Microsoft.VisualBasic.Scripting.MetaData
-Imports SMRUCC.Rsharp.Runtime.Components
+Imports R = SMRUCC.Rsharp.Runtime.Components.Rscript
 
 <Package("engine")>
 Public Module RscriptEngine
@@ -18,7 +18,7 @@ Public Module RscriptEngine
 
     <ExportAPI("parse")>
     Public Function ParseScript(handle As String) As Notebook
-        Return Rscript.AutoHandleScript(handle).DoCall(AddressOf Notebook.fromRscript)
+        Return R.AutoHandleScript(handle).DoCall(AddressOf Notebook.fromRscript)
     End Function
 
 End Module

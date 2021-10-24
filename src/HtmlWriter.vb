@@ -1,5 +1,6 @@
 ﻿Imports System.Text
 Imports Microsoft.VisualBasic.MIME.text.markdown
+Imports Microsoft.VisualBasic.Text.Xml
 
 Public Class HtmlWriter
 
@@ -18,6 +19,7 @@ Public Class HtmlWriter
             Call html.AppendLine()
 
             If TypeOf block Is RCodeBlock Then
+                Call html.AppendLine(sprintf(<div class="output">%s</div>, session.GetHtmlOutput(block)))
                 Call html.AppendLine("<hr />")
             Else
                 Call html.AppendLine("<br />")

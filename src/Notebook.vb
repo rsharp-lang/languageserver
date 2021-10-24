@@ -46,9 +46,13 @@ Public Class Notebook
             If TypeOf line Is CodeComment Then
                 Select Case DirectCast(line, CodeComment).CommentAnnotation
                     Case Annotations.BlockComment, Annotations.LineComment
-                        blockList += New MarkdownBlock With {
-                            .markdown = DirectCast(line, CodeComment).comment
-                        }
+                        If regionMark Then
+                            ' skip
+                        Else
+                            blockList += New MarkdownBlock With {
+                                .markdown = DirectCast(line, CodeComment).comment
+                            }
+                        End If
                     Case Annotations.RegionStart
                         regionMark = True
                         start = DirectCast(line, CodeComment).span

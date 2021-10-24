@@ -11,6 +11,9 @@ Public Module RscriptEngine
 
     End Sub
 
+    Const highlightjs As String = "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/highlight.min.js"
+    Const highlightTheme As String = "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/styles/vs.min.css"
+
     ''' <summary>
     ''' 
     ''' </summary>
@@ -31,14 +34,20 @@ Public Module RscriptEngine
             sprintf(
                 <html language="en-US">
                     <head>
+                        <link rel="stylesheet" href=<%= highlightTheme %>/>
+
                         <style id='extend-builder-css-inline-css' type='text/css'>
                             %s
                         </style>
+
+                        <script type="text/javascript" src=<%= highlightjs %>></script>
                     </head>
                     <body>
                         <div class="notebook">
                             %s
                         </div>
+
+                        <script type="text/javascript">hljs.highlightAll();</script>
                     </body>
                 </html>, style, content)
     End Function

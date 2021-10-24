@@ -1,3 +1,12 @@
+
+#' Render Html from the rscript data
+#'
+#' @param rscript the rscript object data or the filepath of
+#'    a rscript notebook document or the text contents of the
+#'    rscript notebook.
+#'
+#' @return the generated html document content string.
+#'
 const pipHtml as function(rscript) {
     const css as string = system.file("assets/style.css", package = "Rnotebook");
 
@@ -5,7 +14,7 @@ const pipHtml as function(rscript) {
         rscript = engine::parse(rscript);
     }
 
-    rscript 
+    rscript
     |> toHtml(style = readText(css))
     ;
 }

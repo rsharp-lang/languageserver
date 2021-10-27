@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rsharp_app_release|x64'">
-    <OutputPath>E:\GCModeller\src\runtime\Rnotebook\assembly\</OutputPath>
+    <OutputPath>../\assembly\</OutputPath>
     <DocumentationFile>Rnotebook.xml</DocumentationFile>
     <RemoveIntegerChecks>true</RemoveIntegerChecks>
     <Optimize>false</Optimize>

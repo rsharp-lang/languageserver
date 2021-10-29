@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html language="en-US">
+  <head>
+    <link rel="stylesheet" href="https://unpkg.com/@highlightjs/cdn-assets@11.3.1/styles/vs.min.css" />
+    <style id="extend-builder-css-inline-css" type="text/css">
+                            body {
+    font: 62.5%/1.3846 arial,helvetica,clean,sans-serif;
+    background-color: #ccc;
+}
+
+h1, h2 {
+    color: #985735;
+    background-color: #fafafa;
+    border-top: .2em solid #f7f7f7;
+    border-bottom: .2em solid #f7f7f7;
+    padding-top: .3em;
+    padding-bottom: .3em;
+    padding-left: 13px;
+}
+
+.notebook {
+    min-width: 800px;
+    max-width: 1024px;
+    width: 100%;
+    clear: both;
+    /* margin: 0 auto; */
+    margin-left: 8%;
+    overflow: hidden;
+    font-size: 1.3em;
+    padding: 25px;
+    width: 98.9999%;
+    box-shadow: 0.4em 0.4em 0.5em rgb(0 0 0 / 30%);
+    margin-right: 1%;
+    float: left;
+    background-color: #fff;
+    overflow: hidden;
+    border: 1px solid rgb(155, 155, 155);
+}
+
+
+.output {
+    color:indianred;
+    font-family: consolas;
+    font-size: 10;
+    background-color: rgb(245, 245, 245);
+    padding: 5px;
+    max-width: 67.5%;
+	overflow-y: auto;
+}
+
+.output-image {
+    width: 90%;
+}
+
+.code-input {
+    background-color: rgb(240, 240, 240);
+    color:rgb(2, 41, 43);
+    max-width: 65%;
+    position: relative;
+    background-color: #e1f3f8;
+    border-left: 8px solid #02bfe7;
+    padding: 5px 5px 5px 10px;
+    font-family: consolas;
+    font-size: 10;
+}
+
+.code {
+    background-color: lightgoldenrodyellow;
+}
+
+
+
+                        </style>
+    <script type="text/javascript" src="https://unpkg.com/@highlightjs/cdn-assets@11.3.1/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="notebook">
+                            <h1>Demo test for markdown</h1>
+
+<p>This is a paragraph in the markdown document.</p>
+
+<h2>H2 title</h2>
+
+<p>This is another paragraph in the markdown document.</p>
+
+<h3>DEMO1: Markdown list</h3>
+
+<p>Here is a list of supported features in R# notebook:</p>
+
+<ul>
+<li>markdown document</li>
+<li>code block</li>
+<li>image output of the code block</li>
+</ul>
+
+<h3>DEMO2: Table test</h3>
+
+<p>Create a table in document just like what you do in the markdown document:</p>
+
+<p><table>
+<thead><tr><th>Features                      </th><th>supported</th></tr></thead>
+<tr><td>markdown document             </td><td>yes      </td></tr>
+<tr><td>code block                    </td><td>yes      </td></tr>
+<tr><td>image output of the code block</td><td>yes      </td></tr>
+</table></p>
+
+<h3>DEMO3: Code test</h3>
+
+<p>Yes, you can write a code block in markdown document block:</p>
+
+<pre><code class="r">print("Hello world!");
+</code></pre>
+
+<blockquote>
+  <p>But this code block will not be evaluated</p>
+</blockquote>
+
+<br />
+
+                        </div>
+    <script type="text/javascript">hljs.highlightAll();</script>
+  </body>
+</html>

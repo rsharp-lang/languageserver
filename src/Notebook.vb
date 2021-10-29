@@ -67,7 +67,7 @@ Public Class Notebook
                             ),
                             .text = rscript.GetByLineRange(.region),
                             .regionName = regionName
-                        }
+                        }.Trim
                 End Select
             ElseIf regionMark Then
                 codeBlock += line

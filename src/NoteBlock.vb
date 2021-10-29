@@ -43,6 +43,18 @@ Public Class RCodeBlock : Inherits NoteBlock
         Return text
     End Function
 
+    Friend Function Trim() As RCodeBlock
+        Dim txtLines As String() = Strings.Trim(text).LineTokens
+
+        Do While txtLines.Length > 0 AndAlso txtLines(Scan0).StartsWith("#region")
+            txtLines = txtLines.Skip(1).ToArray
+        Loop
+
+        text = txtLines.JoinBy(vbCrLf)
+
+        Return Me
+    End Function
+
     Public Overrides Function GetScript() As String
         Dim sb As New StringBuilder
 

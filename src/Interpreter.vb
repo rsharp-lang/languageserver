@@ -15,6 +15,8 @@ Public Class Interpreter
     Sub New(env As GlobalEnvironment, strict As Boolean)
         REngine = New RInterpreter(New GlobalEnvironment(env))
         REngine.options(strict:=strict)
+        REngine.redirectError2stdout = True
+        REngine.globalEnvir.Rscript = REngine
     End Sub
 
     Public Function GetHtmlOutput(code As RCodeBlock) As String

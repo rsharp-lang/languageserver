@@ -29,7 +29,7 @@ Public Module RscriptEngine
                            Optional strict As Boolean = False,
                            Optional env As Environment = Nothing) As String
 
-        Dim content As String = New HtmlWriter(strict).GetHtml(nb, env)
+        Dim content As String = New HtmlWriter(strict).GetHtml(nb, env.globalEnvironment)
 
         If style.StringEmpty Then
             style = ""

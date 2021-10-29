@@ -25,3 +25,28 @@
 # ```
 # > But this code block will not be evaluated
 ;
+
+# # R# code block demo 
+# One code block in the R# notebook should be start with a 
+# tag: ``region "name"``, and then should be end with a tag:
+# ``end region``. And also the code block should be end with
+# a individual semicolon symbol.
+#
+# syntax example as:
+#
+# ```r
+# #region "block name"
+# ...
+# #end region
+# ;
+# ```
+;
+
+#region "Rscript code demo"
+const word as string = ["World", "R#", "User"];
+
+# print string contents at here will also be
+# rendered on the html document!
+print(`Hello ${word}!`);
+#end region
+;

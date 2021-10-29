@@ -62,8 +62,8 @@ Public Class Notebook
                         blockList += New RCodeBlock With {
                             .block = codeBlock.PopAll,
                             .region = New IntRange(
-                                min:=start.line - 1,
-                                max:=DirectCast(line, CodeComment).span.line - 1
+                                min:=start.line,
+                                max:=DirectCast(line, CodeComment).span.line
                             ),
                             .text = rscript.GetByLineRange(.region),
                             .regionName = regionName

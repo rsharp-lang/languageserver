@@ -50,3 +50,27 @@ const word as string = ["World", "R#", "User"];
 print(`Hello ${word}!`);
 #end region
 ;
+
+# # Notebook charting demo
+#
+# the image outputs of the ``R#`` charting plot code will be encoded as
+# base64 string and then embbled as image tag in the generated
+# html document code.
+;
+
+#region "image test"
+
+# scatter plot test
+const size = 225;
+const x = runif(size);
+const y = ((x * 5) ^ 3) / 2 + x * 5 + 60;
+
+plot(x, y + runif(size) * 13, 
+  background = "white", 
+  grid.fill  = "white", 
+  color      = "skyblue",
+  point_size = 23,
+  shape      = "Triangle" 
+);
+#end region
+;

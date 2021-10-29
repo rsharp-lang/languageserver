@@ -2,6 +2,7 @@
 Imports Microsoft.VisualBasic.Linq
 Imports Microsoft.VisualBasic.Scripting.MetaData
 Imports Microsoft.VisualBasic.Text.Xml
+Imports SMRUCC.Rsharp.Runtime
 Imports R = SMRUCC.Rsharp.Runtime.Components.Rscript
 
 <Package("engine")>
@@ -23,8 +24,12 @@ Public Module RscriptEngine
     ''' </param>
     ''' <returns></returns>
     <ExportAPI("toHtml")>
-    Public Function toHtml(nb As Notebook, Optional style As String = Nothing) As String
-        Dim content As String = New HtmlWriter().GetHtml(nb)
+    Public Function toHtml(nb As Notebook,
+                           Optional style As String = Nothing,
+                           Optional strict As Boolean = False,
+                           Optional env As Environment = Nothing) As String
+
+        Dim content As String = New HtmlWriter(strict).GetHtml(nb, env)
 
         If style.StringEmpty Then
             style = ""

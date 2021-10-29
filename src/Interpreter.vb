@@ -12,8 +12,8 @@ Public Class Interpreter
 
     ReadOnly REngine As RInterpreter
 
-    Sub New()
-        REngine = New RInterpreter
+    Sub New(env As GlobalEnvironment, strict As Boolean)
+        REngine = New RInterpreter(New GlobalEnvironment(env)).options(strict:=strict)
     End Sub
 
     Public Function GetHtmlOutput(code As RCodeBlock) As String

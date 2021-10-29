@@ -1,9 +1,9 @@
 require(Rnotebook);
 
-#' Rendering R# notebook script
-#'
-#' @author xieguigang <xie.guigang@gcmodeller.org>
-#' @description A cli pipeline R# script for run rendering 
+#' title: Rendering R# notebook script
+#' 
+#' author: xieguigang <xie.guigang@gcmodeller.org>
+#' description: A cli pipeline R# script for run rendering 
 #'    of the R# notebook script into html help document.
 #' 
 

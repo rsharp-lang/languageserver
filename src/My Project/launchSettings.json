@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Rnotebook": {
+      "commandName": "Project",
+      "commandLineArgs": "\"E:\\GCModeller\\src\\runtime\\R\\Rnotebook\\app\\renderHtml.R\" --notebook \"E:\\GCModeller\\src\\runtime\\ggplot\\docs\\scatter3d.R\" --attach \"E:\\GCModeller\\src\\runtime\\R\\Rnotebook\""
+    }
+  }
+}

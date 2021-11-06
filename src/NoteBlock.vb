@@ -99,11 +99,15 @@ Public Class RCodeBlock : Inherits NoteBlock
     Friend Function Trim() As RCodeBlock
         Dim txtLines As String() = Strings.Trim(text).LineTokens
 
-        Do While txtLines.Length > 0 AndAlso txtLines(Scan0).StartsWith("#region")
+        Do While txtLines.Length > 0 AndAlso (txtLines(Scan0).StartsWith("#region") OrElse Strings.Trim(txtLines(Scan0)).StringEmpty)
             txtLines = txtLines.Skip(1).ToArray
         Loop
 
-        text = txtLines.JoinBy(vbCrLf)
+        text = txtLines _
+            .Where(Function(str)
+                       Return Strings.Trim(str) <> "#end region"
+                   End Function) _
+            .JoinBy(vbCrLf)
 
         Return Me
     End Function

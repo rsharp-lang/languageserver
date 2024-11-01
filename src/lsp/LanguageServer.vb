@@ -77,10 +77,12 @@ Public Class LanguageServer : Implements IAppHandler
         Dim key As String = request.URL("key")
 
         Select Case url
-            Case "/lsp/put"
+            Case "/lsp/put/"
                 SyncLock cache
-                    cache(key) = post.Form("doc")
+                    cache(key) = post.Objects("doc")
                 End SyncLock
+            Case "/lsp/save"
+                cache(key).SaveTo(path:=post.Objects("file"))
         End Select
     End Sub
 

@@ -117,7 +117,7 @@ Public Module RscriptEngine
     ''' <param name="port"></param>
     <ExportAPI("listen")>
     Public Sub listen(Optional port As Integer = 321, Optional vscode_clr As String = Nothing)
-        Call New LanguageServer(port).Listen()
+        Call New LanguageServer(port, vscode_clr).Listen()
     End Sub
 
 End Module

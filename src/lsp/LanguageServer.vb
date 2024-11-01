@@ -45,7 +45,7 @@ Public Class LanguageServer : Implements IAppHandler
         Throw New InvalidProgramException("no resource was provided!")
     End Function
 
-    Private Sub getDefault(request As HttpRequest, response As HttpResponse) Implements IAppHandler.getDefault
+    Private Sub AppHandler(request As HttpRequest, response As HttpResponse) Implements IAppHandler.AppHandler
         Dim url = Strings.Trim(request.URL.path).ToLower
 
         Select Case url

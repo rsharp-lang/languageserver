@@ -1,7 +1,7 @@
-imports "engine" from "Rnotebook";
+imports "engine" from "languageserver";
 
 #' Initialize the package
 #'
-const .onLoad as function() {
+const .onLoad = function() {
 
 }

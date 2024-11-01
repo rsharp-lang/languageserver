@@ -1,10 +1,10 @@
-Package: Rnotebook
+Package: languageserver
 Type: Package
 Title: R Environment Programming Utils
 Version: 1.0.0.1254
-Date: 2021-01-25
+Date: 2024-11-01
 Author: xieguigang
 Maintainer: xieguigang <gg.xie@bionovogene.com>
-Description: An internal package for R environment programming on unix platform.
+Description: R# language notebook interpreter and html renderer
 License: MIT
 RoxygenNote: 7.1.1

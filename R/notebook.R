@@ -7,14 +7,14 @@
 #'
 #' @return the generated html document content string.
 #'
-const pipHtml as function(rscript) {
-    const css as string = system.file("assets/style.css", package = "Rnotebook");
+const pipHtml = function(rscript) {
+    let css = system.file("assets/style.css", package = "Rnotebook");
 
     if (typeof rscript is "string") {
-        rscript = engine::parse(rscript);
+        rscript <- engine::parse(rscript);
     }
 
     rscript
-    |> toHtml(style = readText(css))
+    |> engine::toHtml(style = readText(css))
     ;
 }

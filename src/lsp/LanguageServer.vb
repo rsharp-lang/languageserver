@@ -100,6 +100,7 @@ re0:
 
                         If Not f Is Nothing Then
                             If TypeOf f.value Is RMethodInfo OrElse TypeOf f.value Is DeclareNewFunction Then
+                                symbol = f.value
                                 GoTo re0
                             End If
                         End If

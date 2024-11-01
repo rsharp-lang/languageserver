@@ -86,7 +86,7 @@ Public Class LanguageServer : Implements IAppHandler
 
                 Using s As New MemoryStream
                     R.globalEnvir.stdout.splitLogging(s)
-
+re0:
                     If TypeOf symbol Is RMethodInfo Then
                         Call docs.PrintHelp(symbol, R.globalEnvir.stdout)
                     ElseIf TypeOf symbol Is DeclareNewFunction Then
@@ -95,6 +95,14 @@ Public Class LanguageServer : Implements IAppHandler
                         ' print the runtime function code
                         Call R.globalEnvir.stdout.WriteLine(markdown.Transform(help))
                         ' Call R.globalEnvir.stdout.WriteLine(DirectCast(symbol, DeclareNewFunction).ToString)
+                    Else
+                        Dim f = R.globalEnvir.FindFunction(name)
+
+                        If Not f Is Nothing Then
+                            If TypeOf f.value Is RMethodInfo OrElse TypeOf f.value Is DeclareNewFunction Then
+                                GoTo re0
+                            End If
+                        End If
                     End If
 
                     Call R.globalEnvir.stdout.Flush()

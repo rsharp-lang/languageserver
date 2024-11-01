@@ -45,8 +45,21 @@ Public Class LanguageServer : Implements IAppHandler
         Throw New InvalidProgramException("no resource was provided!")
     End Function
 
-    Private Sub AppHandler(request As HttpRequest, response As HttpResponse) Implements IAppHandler.AppHandler
+    Private Sub getDefault(request As HttpRequest, response As HttpResponse) Implements IAppHandler.getDefault
+        Dim url = Strings.Trim(request.URL.path).ToLower
 
+        Select Case url
+            Case "", "/", "/index.html", "/index.txt", "/index.htm"
+                Dim bytes = vscode.GetByteBuffer("/index.html")
+
+                Call response.WriteHeader("text/html", bytes.Length)
+                Call response.Write(bytes)
+            Case Else
+                If url.StartsWith("/get") Then
+                Else
+                    Call WebFileSystemListener.HostStaticFile(vscode, request, response)
+                End If
+        End Select
     End Sub
 
     Public Sub Listen()

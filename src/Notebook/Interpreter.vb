@@ -40,7 +40,6 @@
 
 #End Region
 
-Imports System.Drawing.Imaging
 Imports System.IO
 Imports System.Text
 Imports Microsoft.VisualBasic.Emit.Delegates

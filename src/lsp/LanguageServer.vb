@@ -8,8 +8,10 @@ Imports Flute.Http.FileSystem
 Imports Microsoft.VisualBasic.ApplicationServices
 Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
 Imports Microsoft.VisualBasic.Emit.Delegates
+Imports Microsoft.VisualBasic.MIME.text.markdown
 Imports SMRUCC.Rsharp.Development
 Imports SMRUCC.Rsharp.Interpreter
+Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine.ExpressionSymbols.Closure
 Imports SMRUCC.Rsharp.Runtime
 Imports SMRUCC.Rsharp.Runtime.Interop
 
@@ -79,14 +81,19 @@ Public Class LanguageServer : Implements IAppHandler
                 Dim docs = R.globalEnvir _
                     .packages _
                     .packageDocs
+                Dim markdown As New MarkdownRender
 
                 Using s As New MemoryStream
                     R.globalEnvir.stdout.splitLogging(s)
 
                     If TypeOf symbol Is RMethodInfo Then
                         Call docs.PrintHelp(symbol, R.globalEnvir.stdout)
-                    ElseIf TypeOf symbol Is FunctionDeclare Then
+                    ElseIf TypeOf symbol Is DeclareNewFunction Then
+                        Dim help = ConsoleMarkdownPrinter.getMarkdownDocs(DirectCast(symbol, DeclareNewFunction))
 
+                        ' print the runtime function code
+                        Call R.globalEnvir.stdout.WriteLine(markdown.Transform(help))
+                        Call R.globalEnvir.stdout.WriteLine(DirectCast(symbol, DeclareNewFunction).ToString)
                     End If
 
                     Call R.globalEnvir.stdout.Flush()

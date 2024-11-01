@@ -19,7 +19,10 @@ Public Class LanguageServer : Implements IAppHandler
             vscode = New FileSystem(FindResource(Assembly.LoadFrom(vscode_clr.GetFullPath)))
         End If
 
-        http = New HttpDriver().HttpMethod("get", Me).GetSocket(port)
+        http = New HttpDriver() _
+            .HttpMethod("get", Me) _
+            .HttpMethod("post", AddressOf setDefault) _
+            .GetSocket(port)
     End Sub
 
     Private Shared Function FindResource(asm As Assembly) As IFileSystemEnvironment
@@ -45,7 +48,12 @@ Public Class LanguageServer : Implements IAppHandler
         Throw New InvalidProgramException("no resource was provided!")
     End Function
 
-    Private Sub AppHandler(request As HttpRequest, response As HttpResponse) Implements IAppHandler.AppHandler
+    ''' <summary>
+    ''' http get &amp; host static files
+    ''' </summary>
+    ''' <param name="request"></param>
+    ''' <param name="response"></param>
+    Private Sub getDefault(request As HttpRequest, response As HttpResponse) Implements IAppHandler.AppHandler
         Dim url = Strings.Trim(request.URL.path).ToLower
 
         Select Case url
@@ -60,6 +68,10 @@ Public Class LanguageServer : Implements IAppHandler
                     Call WebFileSystemListener.HostStaticFile(vscode, request, response)
                 End If
         End Select
+    End Sub
+
+    Private Sub setDefault(request As HttpRequest, response As HttpResponse)
+
     End Sub
 
     Public Sub Listen()

@@ -47,15 +47,17 @@ Imports Microsoft.VisualBasic.Text.Xml
 Imports SMRUCC.Rsharp.Runtime
 Imports R = SMRUCC.Rsharp.Runtime.Components.Rscript
 
+''' <summary>
+''' R# language server toolkit
+''' </summary>
 <Package("engine")>
 Public Module RscriptEngine
 
-    Sub New()
-
-    End Sub
-
     Const highlightjs As String = "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/highlight.min.js"
     Const highlightTheme As String = "https://unpkg.com/@highlightjs/cdn-assets@11.3.1/styles/vs.min.css"
+
+    Sub Main()
+    End Sub
 
     ''' <summary>
     ''' 
@@ -99,10 +101,24 @@ Public Module RscriptEngine
                 </html>, style, content)
     End Function
 
+    ''' <summary>
+    ''' Parse the given rscript as notebook rendering model
+    ''' </summary>
+    ''' <param name="handle"></param>
+    ''' <returns></returns>
     <ExportAPI("parse")>
     Public Function ParseScript(handle As String) As Notebook
         Return R.AutoHandleScript(handle).DoCall(AddressOf Notebook.fromRscript)
     End Function
+
+    ''' <summary>
+    ''' listen on the tcp port for run the lsp http service
+    ''' </summary>
+    ''' <param name="port"></param>
+    <ExportAPI("listen")>
+    Public Sub listen(Optional port As Integer = 321)
+        Call New LanguageServer(port).Listen()
+    End Sub
 
 End Module
 

@@ -47,7 +47,7 @@ Imports SMRUCC.Rsharp.Runtime
 
 Public Class HtmlWriter
 
-    Friend ReadOnly markdownEngine As New MarkdownHTML
+    Friend ReadOnly markdownEngine As New MarkdownRender
     Friend ReadOnly strict As Boolean = False
 
     Sub New(strict As Boolean)

@@ -44,6 +44,7 @@ Imports System.Drawing.Imaging
 Imports System.IO
 Imports System.Text
 Imports Microsoft.VisualBasic.Emit.Delegates
+Imports Microsoft.VisualBasic.Imaging
 Imports Microsoft.VisualBasic.Imaging.BitmapImage
 Imports Microsoft.VisualBasic.Imaging.Driver
 Imports Microsoft.VisualBasic.Net.Http
@@ -61,7 +62,6 @@ Public Class Interpreter
         REngine = New RInterpreter(New GlobalEnvironment(env))
         REngine.options(strict:=strict)
         REngine.redirectError2stdout = True
-        REngine.globalEnvir.Rscript = REngine
     End Sub
 
     Public Function GetHtmlOutput(code As RCodeBlock) As String
@@ -77,7 +77,7 @@ Public Class Interpreter
                 If TypeOf result Is ImageData Then
                     Call DirectCast(result, ImageData).Save(imgBuffer)
                 Else
-                    Call DirectCast(result, SaveGdiBitmap).Save(imgBuffer, ImageFormat.Png)
+                    Call DirectCast(result, SaveGdiBitmap).Save(imgBuffer, ImageFormats.Png)
                 End If
 
                 Call imgBuffer.Flush()

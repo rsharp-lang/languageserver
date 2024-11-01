@@ -1,13 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>Rnotebook</RootNamespace>
-    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>languageserver</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
     <Configurations>Debug;Release;Rsharp_app_release</Configurations>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <AssemblyName>languageserver</AssemblyName>
+    <UseApplicationFramework>True</UseApplicationFramework>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <DocumentationFile></DocumentationFile>
+    <Title>An implementation of the Language Server Protocol for R# language</Title>
+    <Authors>xieguigang</Authors>
+    <Company>R# language</Company>
+    <Product>R-sharp language</Product>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rsharp_app_release|x64'">
@@ -41,14 +49,7 @@
     <DocumentationFile>Rnotebook.xml</DocumentationFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\R-sharp\R#\Rsharp-netcore5.vbproj" />
-    <ProjectReference Include="..\..\..\sciBASIC#\Data_science\Mathematica\Math\Math\Math.NET5.vbproj" />
-    <ProjectReference Include="..\..\..\sciBASIC#\gr\Microsoft.VisualBasic.Imaging\imaging.NET5.vbproj" />
-    <ProjectReference Include="..\..\..\sciBASIC#\Microsoft.VisualBasic.Core\src\Core.vbproj" />
-    <ProjectReference Include="..\..\..\sciBASIC#\mime\text%html\html_netcore5.vbproj" />
-    <ProjectReference Include="..\..\..\sciBASIC#\mime\text%markdown\markdown.NET5.vbproj" />
-  </ItemGroup>
+
 
   <ItemGroup>
     <None Include="..\LICENSE">
@@ -57,6 +58,19 @@
     </None>
   </ItemGroup>
 
-  <Import Project="..\..\..\..\R-sharp\studio\Rstudio.common\Rstudio.common.projitems" Label="Shared" />
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\GCModeller\src\R-sharp\R#\Rsharp-netcore5.vbproj" />
+    <ProjectReference Include="..\..\..\GCModeller\src\runtime\sciBASIC#\Data_science\Mathematica\Math\Math\Math.NET5.vbproj" />
+    <ProjectReference Include="..\..\..\GCModeller\src\runtime\sciBASIC#\gr\Microsoft.VisualBasic.Imaging\imaging.NET5.vbproj" />
+    <ProjectReference Include="..\..\..\GCModeller\src\runtime\sciBASIC#\Microsoft.VisualBasic.Core\src\Core.vbproj" />
+    <ProjectReference Include="..\..\..\GCModeller\src\runtime\sciBASIC#\mime\text%html\html_netcore5.vbproj" />
+    <ProjectReference Include="..\..\..\GCModeller\src\runtime\sciBASIC#\mime\text%markdown\markdown.NET5.vbproj" />
+  </ItemGroup>
+
+
+
+  <Import Project="..\..\..\GCModeller\src\R-sharp\studio\Rstudio.common\Rstudio.common.projitems" Label="Shared" />
 
 </Project>

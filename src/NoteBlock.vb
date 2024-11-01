@@ -53,9 +53,9 @@
 
 Imports System.Text
 Imports Microsoft.VisualBasic.ComponentModel.Ranges.Model
-Imports Microsoft.VisualBasic.Text
 Imports Microsoft.VisualBasic.Text.Xml
 Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine
+Imports ASCII = Microsoft.VisualBasic.Text.ASCII
 
 Public MustInherit Class NoteBlock
 

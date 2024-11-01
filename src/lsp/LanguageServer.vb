@@ -11,6 +11,7 @@ Public Class LanguageServer : Implements IAppHandler
 
     ReadOnly vscode As FileSystem
     ReadOnly http As HttpSocket
+    ReadOnly cache As New Dictionary(Of String, String)
 
     Sub New(port As Integer, Optional vscode_clr As String = Nothing)
         If vscode_clr.DirectoryExists Then
@@ -71,7 +72,16 @@ Public Class LanguageServer : Implements IAppHandler
     End Sub
 
     Private Sub setDefault(request As HttpRequest, response As HttpResponse)
+        Dim url = Strings.Trim(request.URL.path).ToLower
+        Dim post = DirectCast(request, HttpPOSTRequest).POSTData
+        Dim key As String = request.URL("key")
 
+        Select Case url
+            Case "/lsp/put"
+                SyncLock cache
+                    cache(key) = post.Form("doc")
+                End SyncLock
+        End Select
     End Sub
 
     Public Sub Listen()

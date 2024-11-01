@@ -31,6 +31,7 @@ Public Class LanguageServer : Implements IAppHandler
 
         R = RInterpreter.Rsharp
         R.RedirectOutput(New StreamWriter(Console.OpenStandardOutput), OutputEnvironments.Html)
+        R.LoadLibrary("REnv", ignoreMissingStartupPackages:=True)
         http = New HttpDriver() _
             .HttpMethod("get", Me) _
             .HttpMethod("post", AddressOf setDefault) _
@@ -93,7 +94,7 @@ Public Class LanguageServer : Implements IAppHandler
 
                         ' print the runtime function code
                         Call R.globalEnvir.stdout.WriteLine(markdown.Transform(help))
-                        Call R.globalEnvir.stdout.WriteLine(DirectCast(symbol, DeclareNewFunction).ToString)
+                        ' Call R.globalEnvir.stdout.WriteLine(DirectCast(symbol, DeclareNewFunction).ToString)
                     End If
 
                     Call R.globalEnvir.stdout.Flush()

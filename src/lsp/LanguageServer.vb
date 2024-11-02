@@ -144,6 +144,11 @@ re0:
         Select Case url
             Case "/lsp/put/"
                 Dim rscript_str As String = post.Objects("doc")
+
+                SyncLock cache
+                    cache(key) = rscript_str
+                End SyncLock
+
                 Dim parse = Program.BuildProgram(rscript_str)
 
                 If Not parse Is Nothing Then
@@ -157,10 +162,6 @@ re0:
                         End If
                     Next
                 End If
-
-                SyncLock cache
-                    cache(key) = rscript_str
-                End SyncLock
             Case "/lsp/save/"
                 cache(key).SaveTo(path:=post.Objects("file"))
         End Select

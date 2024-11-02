@@ -123,6 +123,11 @@ re0:
                     .ToArray
 
                 Call response.WriteJSON(names)
+            Case "/lsp/read/file/"
+                Dim path As String = request.URL("path")
+                Dim text As String = path.ReadAllText
+
+                Call response.WriteHTML(text)
             Case Else
                 Call WebFileSystemListener.HostStaticFile(vscode, request, response)
         End Select

@@ -52,7 +52,10 @@ Public Class LanguageServer : Implements IAppHandler
                     Continue For
                 End If
 
-                If f.ReturnType.ImplementInterface(Of IFileSystemEnvironment)() Then
+                Dim valType As Type = f.ReturnType
+                Dim checkIFs As Boolean = valType.ImplementInterface(Of IFileSystemEnvironment)()
+
+                If checkIFs OrElse valType Is GetType(IFileSystemEnvironment) Then
                     Return f.Invoke(Nothing, {})
                 End If
             Next

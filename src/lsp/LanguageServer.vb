@@ -165,6 +165,8 @@ re0:
             Case "/lsp/save/"
                 cache(key).SaveTo(path:=post.Objects("file"))
         End Select
+
+        Call response.WriteHTML("ok")
     End Sub
 
     <MethodImpl(MethodImplOptions.AggressiveInlining)>

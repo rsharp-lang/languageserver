@@ -11,8 +11,11 @@ Imports Microsoft.VisualBasic.Emit.Delegates
 Imports Microsoft.VisualBasic.MIME.text.markdown
 Imports SMRUCC.Rsharp.Development
 Imports SMRUCC.Rsharp.Interpreter
+Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine
+Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine.ExpressionSymbols
 Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine.ExpressionSymbols.Closure
 Imports SMRUCC.Rsharp.Runtime
+Imports SMRUCC.Rsharp.Runtime.Components
 Imports SMRUCC.Rsharp.Runtime.Interop
 
 Public Class LanguageServer : Implements IAppHandler
@@ -140,8 +143,23 @@ re0:
 
         Select Case url
             Case "/lsp/put/"
+                Dim rscript_str As String = post.Objects("doc")
+                Dim parse = Program.BuildProgram(rscript_str)
+
+                If Not parse Is Nothing Then
+                    For Each line As Expression In parse
+                        If TypeOf line Is Require OrElse TypeOf line Is DeclareNewFunction Then
+                            Call R.Evaluate(line)
+                        ElseIf TypeOf line Is DeclareLambdaFunction Then
+                            With DirectCast(line, DeclareLambdaFunction)
+                                R.globalEnvir.funcSymbols(.name) = New Symbol(.name, line)
+                            End With
+                        End If
+                    Next
+                End If
+
                 SyncLock cache
-                    cache(key) = post.Objects("doc")
+                    cache(key) = rscript_str
                 End SyncLock
             Case "/lsp/save/"
                 cache(key).SaveTo(path:=post.Objects("file"))

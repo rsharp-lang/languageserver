@@ -112,6 +112,14 @@ re0:
                     Call response.WriteHeader("text/html", s.Length)
                     Call response.Write(s.ToArray)
                 End Using
+            Case "/lsp/get/functions/"
+                Dim functions = R.globalEnvir.EnumerateAllFunctions.ToArray
+                Dim names As String() = functions _
+                    .Select(Function(f) f.name) _
+                    .Distinct _
+                    .ToArray
+
+                Call response.WriteJSON(names)
             Case Else
                 Call WebFileSystemListener.HostStaticFile(vscode, request, response)
         End Select

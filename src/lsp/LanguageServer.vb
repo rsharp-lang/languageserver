@@ -125,7 +125,7 @@ re0:
                 Call response.WriteJSON(names)
             Case "/lsp/read/"
                 Dim path As String = request.URL("file").UrlDecode
-                Dim text As String = path.ReadAllText
+                Dim text As String = path.ReadAllText(throwEx:=False, suppress:=True)
 
                 Call response.WriteHTML(text)
             Case Else

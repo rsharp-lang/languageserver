@@ -123,8 +123,8 @@ re0:
                     .ToArray
 
                 Call response.WriteJSON(names)
-            Case "/lsp/read/file/"
-                Dim path As String = request.URL("path").UrlDecode
+            Case "/lsp/read/"
+                Dim path As String = request.URL("file").UrlDecode
                 Dim text As String = path.ReadAllText
 
                 Call response.WriteHTML(text)

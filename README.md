@@ -4,6 +4,8 @@ R# language server for vscode UI and notebook interpreter and html renderer
 
 the entire notebook for R# language is a valid R# script, which can be running in R# environment directly.
 
+this package make supported the R# language code syntax analysis for [mini-R](https://github.com/rsharp-lang/mini-R) project.
+
 ## Syntax
 
 ### 1. markdown comment supports

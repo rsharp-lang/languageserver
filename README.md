@@ -35,3 +35,4 @@ code_here();
 ## Demo screenshot
 
 ![](test/demo_screen.png)
+![](docs/Capture.PNG)

@@ -1,5 +1,6 @@
-# Rnb
-R# language notebook interpreter and html renderer
+# R Language Server
+
+R# language server for vscode UI and notebook interpreter and html renderer
 
 the entire notebook for R# language is a valid R# script, which can be running in R# environment directly.
 

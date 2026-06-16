@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>listen on the tcp port for run the lsp http service</title>
+    <title>Terminate an R Session</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
     <link rel="stylesheet" type="text/css" href="../../_assets/page.css">
@@ -13,31 +13,42 @@
 
         <table style="width: 100%;">
             <tr>
-                <td>listen {engine}</td>
+                <td>q {Rsession}</td>
                 <td style="text-align: right;">R Documentation</td>
             </tr>
         </table>
 
-        <h2>listen on the tcp port for run the lsp http service</h2>
+        <h2>Terminate an R Session</h2>
 
         <h3>Description</h3>
 
-        
+        <p><br /> The function <code>quit</code> or its alias <code>q</code> terminate the current R session.</p>
 
         <h3>Usage</h3>
 
         <div style="width: 100%; padding-left: 3%; color: black;">
-            <pre><code class='language-R' style="color: black; font-weight:normal;"><strong>listen</strong>(
-    <i>port</i> = <span style='color: green;'>321</span>,
-    <i>vscode.clr</i> = <span style='color: blue !important;'>NULL</span>);</code></pre>
+            <pre><code class='language-R' style="color: black; font-weight:normal;"><strong>q</strong>(
+    <i>save</i> = <span style='color: brown;'><strong>"default"</strong></span>,
+    <i>status</i> = <span style='color: green;'>0</span>,
+    <i>runLast</i> = <span style='color: blue !important;'>TRUE</span>);</code></pre>
         </div>
 
         <h3>Arguments</h3>
 
         <table>
             
-<dt>port</dt>
-<dd><p>[as integer]</p></dd>
+<dt>save</dt>
+<dd><p>a character string indicating whether the environment (workspace) should be saved, 
+ one of <code>"no"</code>, <code>"yes"</code>, <code>"ask"</code> or <code>"default"</code>. [as string]</p></dd>
+
+
+<dt>status</dt>
+<dd><p>the (numerical) error status to be returned to the operating system, where relevant. 
+ Conventionally 0 indicates successful completion. [as integer]</p></dd>
+
+
+<dt>runLast</dt>
+<dd><p>should <code>.Last()</code> be executed?. [as boolean]</p></dd>
 
         </table>
 
@@ -59,8 +70,8 @@
         
 
         <hr />
-        <div style="text-align: center;">[Package <em>engine</em> version 1.0.0.0 <a
-                href="../engine.html">Index</a>]
+        <div style="text-align: center;">[Package <em>Rsession</em> version 1.0.0.0 <a
+                href="../Rsession.html">Index</a>]
         </div>
     </div>
 </body>

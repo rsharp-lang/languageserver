@@ -95,7 +95,7 @@ plot(runif(20), runif(20),
   grid.fill  = "white", 
   color      = "skyblue",
   point_size = 23,
-  shape      = "Triangle" 
+  shape      = "circle" 
 );
 #end region
 ;

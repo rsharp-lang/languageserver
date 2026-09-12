@@ -8,7 +8,7 @@
 #' @return the generated html document content string.
 #'
 const pipHtml = function(rscript) {
-    let css = system.file("assets/style.css", package = "Rnotebook");
+    let css = file.path(@datadir, "assets/style.css");
 
     if (typeof rscript is "string") {
         rscript <- engine::parse(rscript);

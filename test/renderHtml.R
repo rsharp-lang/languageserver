@@ -1,4 +1,6 @@
-engine::parse(`${@dir}/demo.R`)
+require(languageserver);
+
+engine::parse(here("demo.R"))
 |> pipHtml
-|> writeLines(con = `${@dir}/demo.html`)
+|> writeLines(con = here("demo.html"))
 ;

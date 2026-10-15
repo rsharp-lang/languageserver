@@ -476,7 +476,8 @@ Public Class RsharpLspServer
         If prog Is Nothing Then Return arr
 
         For Each fn In EnumerateTopLevelFunctions(prog)
-            arr.Add(MakeDocumentSymbol(fn.Name, fn.Value, text))
+            Call R.Set(fn.Name, fn.Value)
+            Call arr.Add(MakeDocumentSymbol(fn.Name, fn.Value, text))
         Next
 
         Return arr

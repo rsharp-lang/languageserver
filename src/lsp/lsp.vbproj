@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>lsp</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\GCModeller\src\R-sharp\R#\Rsharp-netcore5.vbproj" />
+    <ProjectReference Include="..\..\..\..\..\GCModeller\src\runtime\sciBASIC#\Microsoft.VisualBasic.Core\src\Core.vbproj" />
+    <ProjectReference Include="..\..\..\..\..\GCModeller\src\runtime\sciBASIC#\mime\application%json\JSON-netcore5.vbproj" />
+    <ProjectReference Include="..\languageserver\languageserver.vbproj" />
+  </ItemGroup>
+
+</Project>

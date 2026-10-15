@@ -3,8 +3,9 @@ Imports System.Text
 Imports Microsoft.VisualBasic.ApplicationServices.Development.XmlDoc.Assembly
 Imports Microsoft.VisualBasic.Linq
 Imports Microsoft.VisualBasic.Serialization
+Imports Microsoft.VisualBasic.Text.Xml.Models
 Imports SMRUCC.Rsharp.Development
-Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine.ExpressionSymbols.Closure
+Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine
 Imports SMRUCC.Rsharp.Runtime
 Imports SMRUCC.Rsharp.Runtime.Internal.ConsolePrinter
 Imports SMRUCC.Rsharp.Runtime.Interop
@@ -23,18 +24,43 @@ Namespace LspMarkdown
                     .packageDocs.GetAnnotations(f.GetNetCoreCLRDeclaration)
 
                 Call sb.AppendLine(f.html(If(doc, New ProjectMember)))
-            ElseIf TypeOf value Is DeclareNewFunction Then
-                ' reuse the existing markdown docs renderer for runtime R# functions
-                Dim md = ConsoleMarkdownPrinter.getMarkdownDocs(DirectCast(value, DeclareNewFunction))
-
-                If Not String.IsNullOrEmpty(md) Then
-                    Return md
-                End If
-
-                sb.AppendLine("### ").Append(DirectCast(value, DeclareNewFunction).funcName).AppendLine()
+            ElseIf value.GetType.IsInheritsFrom(GetType(SymbolExpression)) Then
+                Call sb.AppendLine(DirectCast(value, SymbolExpression).html)
             Else
                 Return Nothing
             End If
+
+            Return sb.ToString
+        End Function
+
+        <Extension>
+        Public Function html(fun As SymbolExpression) As String
+            Dim help As Document = fun.TryGetHelpDocument
+            Dim sb As New StringBuilder
+
+            Call sb.AppendLine($"# {fun.GetSymbolName} {{package: {fun.expressionName.Description}}}")
+
+            If Not help Is Nothing Then
+                Call sb.AppendLine(help.title)
+                Call sb.AppendLine()
+                Call sb.AppendLine("## description")
+                Call sb.AppendLine(help.description)
+                Call sb.AppendLine("## details")
+                Call sb.AppendLine(help.details)
+                Call sb.AppendLine("## arguments")
+
+                For Each arg As NamedValue In help.parameters.SafeQuery
+                    Call sb.AppendLine("#### " & arg.name)
+                    Call sb.AppendLine(arg.text)
+                Next
+
+                Call sb.AppendLine("## returns")
+                Call sb.AppendLine(help.returns)
+                Call sb.AppendLine("## examples")
+                Call sb.AppendLine(help.examples)
+            End If
+
+            Call sb.AppendLine(fun.ToString)
 
             Return sb.ToString
         End Function

@@ -1,0 +1,68 @@
+{
+  "name": "rsharp-lsp",
+  "displayName": "R# Language Server",
+  "description": "Language Server Protocol support (hover, completion, outline, go-to-definition, signature help) for the R# scripting language.",
+  "version": "1.0.0",
+  "publisher": "rsharp",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onLanguage:rsharp"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "rsharp",
+        "aliases": [
+          "R#",
+          "rsharp"
+        ],
+        "extensions": [
+          ".rsharp",
+          ".R",
+          ".r"
+        ]
+      }
+    ],
+    "configuration": {
+      "title": "R# Language Server",
+      "properties": {
+        "rsharp.lsp.dotnetPath": {
+          "type": "string",
+          "default": "dotnet",
+          "description": "Path to the dotnet host used to launch the R# language server."
+        },
+        "rsharp.lsp.serverPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to the compiled lsp.dll. When empty, the extension looks for ./server/lsp.dll next to the extension."
+        },
+        "rsharp.lsp.trace": {
+          "type": "boolean",
+          "default": false,
+          "description": "Forward the server stderr trace to the VS Code output channel."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.4.0"
+  }
+}

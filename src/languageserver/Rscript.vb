@@ -111,14 +111,5 @@ Public Module RscriptEngine
         Return R.AutoHandleScript(handle).DoCall(AddressOf Notebook.fromRscript)
     End Function
 
-    ''' <summary>
-    ''' listen on the tcp port for run the lsp http service
-    ''' </summary>
-    ''' <param name="port"></param>
-    <ExportAPI("listen")>
-    Public Sub listen(Optional port As Integer = 321, Optional vscode_clr As String = Nothing)
-        Call New LanguageServer(port, vscode_clr).Listen()
-    End Sub
-
 End Module
 

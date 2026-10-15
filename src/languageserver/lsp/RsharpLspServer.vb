@@ -1,12 +1,8 @@
 Imports System.IO
 Imports System.Text
-Imports System.Threading.Tasks
-Imports Microsoft.VisualBasic.ApplicationServices.Debugging.Diagnostics
 Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
 Imports Microsoft.VisualBasic.MIME.application.json
 Imports Microsoft.VisualBasic.MIME.application.json.Javascript
-Imports jsobj = Microsoft.VisualBasic.MIME.application.json.Javascript.JsonObject
-Imports jsVal = Microsoft.VisualBasic.MIME.application.json.Javascript.JsonValue
 Imports SMRUCC.Rsharp.Development
 Imports SMRUCC.Rsharp.Development.CodeAnalysis
 Imports SMRUCC.Rsharp.Interpreter
@@ -18,6 +14,9 @@ Imports SMRUCC.Rsharp.Runtime
 Imports SMRUCC.Rsharp.Runtime.Components
 Imports SMRUCC.Rsharp.Runtime.Components.Interface
 Imports SMRUCC.Rsharp.Runtime.Interop
+Imports jsobj = Microsoft.VisualBasic.MIME.application.json.Javascript.JsonObject
+Imports jsVal = Microsoft.VisualBasic.MIME.application.json.Javascript.JsonValue
+Imports rlang = SMRUCC.Rsharp.Language
 
 ''' <summary>
 ''' An implementation of the Language Server Protocol for the R# scripting language.
@@ -66,8 +65,8 @@ Public Class RsharpLspServer
     ''' stdio mode (default): the server reads the process stdin and writes the
     ''' process stdout. this is the mode used by the lsp.vbproj command line host.
     ''' </summary>
-    Sub New(Optional trace As TextWriter = Nothing)
-        Me.New(Nothing, Nothing, trace)
+    Sub New(Optional R As RInterpreter = Nothing, Optional trace As TextWriter = Nothing)
+        Me.New(Nothing, Nothing, R, trace)
     End Sub
 
     ''' <summary>
@@ -79,12 +78,11 @@ Public Class RsharpLspServer
     ''' <param name="input">the stream the read loop consumes, or Nothing for the process stdin.</param>
     ''' <param name="output">the stream responses are written to, or Nothing for the process stdout.</param>
     ''' <param name="trace">the log sink; Nothing falls back to the process stderr.</param>
-    Sub New(input As Stream, output As Stream, Optional trace As TextWriter = Nothing)
+    Sub New(input As Stream, output As Stream, Optional R As RInterpreter = Nothing, Optional trace As TextWriter = Nothing)
         Me.inputOverride = input
         Me.outputOverride = output
         Me.trace = If(trace, Console.Error)
-
-        R = RInterpreter.Rsharp
+        Me.R = If(R, RInterpreter.Rsharp)
 
         ' redirect the R# interpreter output to stderr so it never pollutes the
         ' LSP message frames that travel on stdout. a GUI host has no console
@@ -340,10 +338,28 @@ Public Class RsharpLspServer
 
         Dim name = SimpleName(word)
         Dim sym = R.globalEnvir.FindFunction(name)
+        Dim md As String = Nothing
 
-        If sym Is Nothing Then Return Nothing
+        If sym Is Nothing Then
+            sym = R.globalEnvir.getPrimitive(name)
+        End If
 
-        Dim md As String = BuildHoverMarkdown(sym.value, name)
+        If sym IsNot Nothing Then
+            md = BuildHoverMarkdown(sym.value, name)
+        ElseIf rlang.KeywordSet.ContainsKey(name) Then
+            md = rlang.KeywordSet(name)
+        End If
+
+        If String.IsNullOrEmpty(md) Then
+            ' the global environment only exposes the built-in / package functions,
+            ' so a function declared in the open document needs a local lookup
+            Dim localFunc = FindDocumentFunction(text, name)
+
+            If localFunc IsNot Nothing Then
+                md = BuildHoverMarkdown(localFunc, name)
+            End If
+        End If
+
         If String.IsNullOrEmpty(md) Then Return Nothing
 
         Dim contents = New jsobj()
@@ -412,9 +428,9 @@ Public Class RsharpLspServer
         Dim globalNames As New HashSet(Of String)
 
         For Each f As NamedValue(Of String) In globalFunctions
-            If MatchesPrefix(f.name, prefix) Then
-                items.Add(CompletionItem(f.name, CI_Function, If(String.IsNullOrEmpty(f.Value), Nothing, f.Value)))
-                globalNames.Add(f.name)
+            If MatchesPrefix(f.Name, prefix) Then
+                items.Add(CompletionItem(f.Name, CI_Function, If(String.IsNullOrEmpty(f.Value), Nothing, f.Value)))
+                globalNames.Add(f.Name)
             End If
 
             If items.Count >= 500 Then Exit For
@@ -484,7 +500,7 @@ Public Class RsharpLspServer
         If prog Is Nothing Then Return arr
 
         For Each fn In EnumerateTopLevelFunctions(prog)
-            arr.Add(MakeDocumentSymbol(fn.name, fn.Value, text))
+            arr.Add(MakeDocumentSymbol(fn.Name, fn.Value, text))
         Next
 
         Return arr
@@ -503,21 +519,21 @@ Public Class RsharpLspServer
             Dim fnNode As Expression = GetFunctionNode(line)
 
             If TypeOf line Is DeclareNewFunction Then
-                name = DirectCast(line, DeclareNewFunction).funcName
+                name = NormalizeSymbolName(DirectCast(line, DeclareNewFunction).funcName)
                 fnNode = line
             ElseIf TypeOf line Is DeclareLambdaFunction Then
-                name = DirectCast(line, DeclareLambdaFunction).name
+                name = NormalizeSymbolName(DirectCast(line, DeclareLambdaFunction).name)
                 fnNode = line
             ElseIf TypeOf line Is DeclareNewSymbol Then
                 Dim ds = DirectCast(line, DeclareNewSymbol)
                 If ds.names IsNot Nothing AndAlso ds.names.Count > 0 AndAlso IsFunctionExpr(ds.value) Then
-                    name = ds.names(0)
+                    name = NormalizeSymbolName(ds.names(0))
                 End If
             ElseIf TypeOf line Is ValueAssignExpression Then
                 Dim va = DirectCast(line, ValueAssignExpression)
                 If va.targetSymbols IsNot Nothing AndAlso IsFunctionExpr(va.value) Then
                     For Each nm In va.targetSymbols
-                        name = If(TypeOf nm Is SymbolReference, DirectCast(nm, SymbolReference).symbol, nm.ToString())
+                        name = NormalizeSymbolName(If(TypeOf nm Is SymbolReference, DirectCast(nm, SymbolReference).symbol, nm.ToString()))
                         Exit For
                     Next
                 End If
@@ -530,6 +546,52 @@ Public Class RsharpLspServer
         Next
 
         Return list
+    End Function
+
+    ''' <summary>
+    ''' find the top level function declared in the open document that matches
+    ''' <paramref name="name"/>, or <c>Nothing</c> when the document does not declare
+    ''' it. the global environment only knows the built-in / package functions of the
+    ''' interpreter, so a document local lookup is required before giving up.
+    ''' </summary>
+    Private Function FindDocumentFunction(text As String, name As String) As DeclareNewFunction
+        If text Is Nothing OrElse String.IsNullOrEmpty(name) Then Return Nothing
+
+        Dim prog = Program.BuildProgram(text)
+
+        If prog Is Nothing Then Return Nothing
+
+        For Each fn In EnumerateTopLevelFunctions(prog)
+            If fn.Name = name Then
+                Return TryCast(GetFunctionNode(fn.Value), DeclareNewFunction)
+            End If
+        Next
+
+        Return Nothing
+    End Function
+
+    ''' <summary>
+    ''' normalize a symbol name extracted from the ast. R# renders some expression
+    ''' nodes through ToString(), which wraps the identifier in quotes (a degraded
+    ''' parse yields the literal text <c>"add"</c> instead of the identifier
+    ''' <c>add</c>); strip the wrapping quotes so the name stays usable as a
+    ''' completion / document symbol / definition key.
+    ''' </summary>
+    Private Shared Function NormalizeSymbolName(value As String) As String
+        If String.IsNullOrEmpty(value) Then Return value
+
+        Dim name As String = value.Trim()
+
+        If name.Length >= 2 Then
+            Dim head As Char = name(0)
+            Dim tail As Char = name(name.Length - 1)
+
+            If (head = """"c AndAlso tail = """"c) OrElse (head = "'"c AndAlso tail = "'"c) Then
+                Return name.Substring(1, name.Length - 2).Trim()
+            End If
+        End If
+
+        Return name
     End Function
 
     ''' <summary>
@@ -598,7 +660,7 @@ Public Class RsharpLspServer
         If prog Is Nothing Then Return Nothing
 
         For Each fn In EnumerateTopLevelFunctions(prog)
-            If fn.name = name Then
+            If fn.Name = name Then
                 Return LocationArray(uri, fn.Value)
             End If
         Next
@@ -631,9 +693,9 @@ Public Class RsharpLspServer
         Dim pseudoUri = FirstOpenUri()
 
         For Each f As NamedValue(Of String) In globalFunctions
-            If String.IsNullOrEmpty(query) OrElse f.name.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 Then
+            If String.IsNullOrEmpty(query) OrElse f.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0 Then
                 Dim si = New jsobj()
-                si("name") = New jsVal(f.name)
+                si("name") = New jsVal(f.Name)
                 si("kind") = New jsVal(SYM_Function)
                 If Not String.IsNullOrEmpty(f.Value) Then
                     si("containerName") = New jsVal(f.Value)
@@ -671,14 +733,25 @@ Public Class RsharpLspServer
         Dim callInfo = FindEnclosingCall(text, line, col)
         If String.IsNullOrEmpty(callInfo.funcName) Then Return Nothing
 
-        Dim sym = R.globalEnvir.FindFunction(SimpleName(callInfo.funcName))
-        If sym Is Nothing Then Return Nothing
+        Dim name = SimpleName(callInfo.funcName)
+        Dim sym = R.globalEnvir.FindFunction(name)
+        Dim value As Object = If(sym Is Nothing, Nothing, sym.value)
+        Dim documentLocal As Boolean = False
+
+        If value Is Nothing Then
+            ' the global environment only exposes the built-in / package functions,
+            ' so a function declared in the open document needs a local lookup
+            value = FindDocumentFunction(text, name)
+            documentLocal = value IsNot Nothing
+        End If
+
+        If value Is Nothing Then Return Nothing
 
         Dim label As String = Nothing
         Dim parameters = New JsonArray()
 
-        If TypeOf sym.value Is RMethodInfo Then
-            Dim info = DirectCast(sym.value, RMethodInfo)
+        If TypeOf value Is RMethodInfo Then
+            Dim info = DirectCast(value, RMethodInfo)
             Dim parts As New List(Of String)
 
             If info.parameters IsNot Nothing Then
@@ -694,8 +767,8 @@ Public Class RsharpLspServer
             End If
 
             label = info.name & "(" & String.Join(", ", parts) & ")"
-        ElseIf TypeOf sym.value Is DeclareNewFunction Then
-            Dim fn = DirectCast(sym.value, DeclareNewFunction)
+        ElseIf TypeOf value Is DeclareNewFunction Then
+            Dim fn = DirectCast(value, DeclareNewFunction)
             Dim parts As New List(Of String)
 
             For Each d As DeclareNewSymbol In fn.parameters
@@ -707,7 +780,11 @@ Public Class RsharpLspServer
                 Next
             Next
 
-            label = fn.funcName & "(" & String.Join(", ", parts) & ")"
+            ' a document local function is reported with the identifier the user
+            ' actually typed: its ast funcName may carry an anonymous id suffix
+            Dim displayName As String = If(documentLocal, name, NormalizeSymbolName(fn.funcName))
+
+            label = displayName & "(" & String.Join(", ", parts) & ")"
         Else
             Return Nothing
         End If

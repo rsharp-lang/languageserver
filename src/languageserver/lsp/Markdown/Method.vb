@@ -19,9 +19,11 @@ Namespace LspMarkdown
             ElseIf TypeOf value Is DeclareNewFunction Then
                 ' reuse the existing markdown docs renderer for runtime R# functions
                 Dim md = ConsoleMarkdownPrinter.getMarkdownDocs(DirectCast(value, DeclareNewFunction))
+
                 If Not String.IsNullOrEmpty(md) Then
                     Return md
                 End If
+
                 sb.AppendLine("### ").Append(DirectCast(value, DeclareNewFunction).funcName).AppendLine()
             Else
                 Return Nothing
@@ -41,22 +43,23 @@ Namespace LspMarkdown
                 .ToArray
 
             If api.parameters.Length > 3 Then
-                params = api.parameters.Select(Function(a) a.html).JoinBy(", <br />")
+                params = api.parameters.Select(Function(a) a.html).JoinBy(", " & vbCrLf & vbCrLf & "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")
             Else
                 params = api.parameters.Select(Function(a) a.html).JoinBy(", ")
             End If
 
-            Return $"let <code>{api.name}</code> as function({params}) -> ``{returns.JoinBy("|")}`` {{<br />
-    <span style='color: green;'>
-    # <br />
-    # .NET clr API information <br />
-    # <br />
-    # module: {rawDeclare} <br />
-    # LibPath: {raw.Assembly.Location.ParentPath} <br />
-    # library: {raw.Assembly.Location.FileName} <br />
-    # package: ""{packageName}"" <br />
-    # </span><br /> 
-    return call <code>R#.interop_[{raw.Name}::{api.GetNetCoreCLRDeclaration().Name}]</code>(...);<br />
+            Return $"let <code>{api.name}</code> as function({params}) -> ``{returns.JoinBy("|")}`` {{{vbCrLf & vbCrLf}
+ ```
+    # 
+    # .NET clr API information 
+    # 
+    # module: {rawDeclare} 
+    # LibPath: {raw.Assembly.Location.ParentPath} 
+    # library: {raw.Assembly.Location.FileName} 
+    # package: ""{packageName}"" 
+    # 
+    return call R#.interop_[{raw.Name}::{api.GetNetCoreCLRDeclaration().Name}](...);
+```
 }}"
         End Function
 

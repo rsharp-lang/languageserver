@@ -4,6 +4,7 @@ Imports Microsoft.VisualBasic.Linq
 Imports Microsoft.VisualBasic.Serialization
 Imports SMRUCC.Rsharp.Development
 Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine.ExpressionSymbols.Closure
+Imports SMRUCC.Rsharp.Runtime
 Imports SMRUCC.Rsharp.Runtime.Internal.ConsolePrinter
 Imports SMRUCC.Rsharp.Runtime.Interop
 
@@ -11,7 +12,7 @@ Namespace LspMarkdown
 
     Module Method
 
-        Public Function BuildHoverMarkdown(value As Object, name As String) As String
+        Public Function BuildHoverMarkdown(value As Object, name As String, env As Environment) As String
             Dim sb As New StringBuilder
 
             If TypeOf value Is RMethodInfo Then
@@ -57,8 +58,9 @@ Namespace LspMarkdown
     # LibPath: {raw.Assembly.Location.ParentPath} 
     # library: {raw.Assembly.Location.FileName} 
     # package: ""{packageName}"" 
-    # 
-    return call R#.interop_[{raw.Name}::{api.GetNetCoreCLRDeclaration().Name}](...);
+    # stackframe: {api.stackFrame}
+    #
+    return call R-sharp.interop_[{api.ToString}](...);
 ```
 }}"
         End Function

@@ -22,7 +22,7 @@ Namespace LspMarkdown
                     .packages _
                     .packageDocs.GetAnnotations(f.GetNetCoreCLRDeclaration)
 
-                Call sb.AppendLine(f.html(doc))
+                Call sb.AppendLine(f.html(If(doc, New ProjectMember)))
             ElseIf TypeOf value Is DeclareNewFunction Then
                 ' reuse the existing markdown docs renderer for runtime R# functions
                 Dim md = ConsoleMarkdownPrinter.getMarkdownDocs(DirectCast(value, DeclareNewFunction))
@@ -58,6 +58,15 @@ Namespace LspMarkdown
             Dim head As String = doc.Summary
             Dim desc As String = doc.Remarks
             Dim vals As String = doc.Returns
+            Dim args As New List(Of String)
+
+            If Not doc.Params.IsNullOrEmpty Then
+                For Each a In doc.Params
+                    Call args.Add("#### " & a.name)
+                    Call args.Add(a.text)
+                    Call args.Add(vbCrLf)
+                Next
+            End If
 
             Return $"
 {head}
@@ -65,6 +74,10 @@ Namespace LspMarkdown
 ## description
 
 {desc}
+
+## arguments
+
+{args.JoinBy(vbCrLf)}
 
 ## returns
 

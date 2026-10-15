@@ -352,7 +352,7 @@ Public Class RsharpLspServer
         End If
 
         If sym IsNot Nothing Then
-            md = LspMarkdown.Method.BuildHoverMarkdown(sym.value, name)
+            md = LspMarkdown.Method.BuildHoverMarkdown(sym.value, name, R.globalEnvir)
         ElseIf rlang.KeywordSet.ContainsKey(name) Then
             md = rlang.KeywordSet(name)
         Else
@@ -369,7 +369,7 @@ Public Class RsharpLspServer
             Dim localFunc = FindDocumentFunction(text, name)
 
             If localFunc IsNot Nothing Then
-                md = LspMarkdown.Method.BuildHoverMarkdown(localFunc, name)
+                md = LspMarkdown.Method.BuildHoverMarkdown(localFunc, name, R.globalEnvir)
             End If
         End If
 

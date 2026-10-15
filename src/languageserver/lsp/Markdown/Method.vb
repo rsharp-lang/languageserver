@@ -1,5 +1,6 @@
 ﻿Imports System.Runtime.CompilerServices
 Imports System.Text
+Imports Microsoft.VisualBasic.ApplicationServices.Development.XmlDoc.Assembly
 Imports Microsoft.VisualBasic.Linq
 Imports Microsoft.VisualBasic.Serialization
 Imports SMRUCC.Rsharp.Development
@@ -16,7 +17,12 @@ Namespace LspMarkdown
             Dim sb As New StringBuilder
 
             If TypeOf value Is RMethodInfo Then
-                Call sb.AppendLine(DirectCast(value, RMethodInfo).html)
+                Dim f As RMethodInfo = DirectCast(value, RMethodInfo)
+                Dim doc As ProjectMember = env.globalEnvironment _
+                    .packages _
+                    .packageDocs.GetAnnotations(f.GetNetCoreCLRDeclaration)
+
+                Call sb.AppendLine(f.html(doc))
             ElseIf TypeOf value Is DeclareNewFunction Then
                 ' reuse the existing markdown docs renderer for runtime R# functions
                 Dim md = ConsoleMarkdownPrinter.getMarkdownDocs(DirectCast(value, DeclareNewFunction))
@@ -34,7 +40,7 @@ Namespace LspMarkdown
         End Function
 
         <Extension>
-        Public Function html(api As RMethodInfo) As String
+        Public Function html(api As RMethodInfo, doc As ProjectMember) As String
             Dim raw As Type = api.GetNetCoreCLRDeclaration().DeclaringType
             Dim rawDeclare$ = raw.FullName
             Dim packageName$ = raw.NamespaceEntry(True).Namespace
@@ -49,7 +55,24 @@ Namespace LspMarkdown
                 params = api.parameters.Select(Function(a) a.html).JoinBy(", ")
             End If
 
-            Return $"let <code>{api.name}</code> as function({params}) -> ``{returns.JoinBy("|")}`` {{{vbCrLf & vbCrLf}
+            Dim head As String = doc.Summary
+            Dim desc As String = doc.Remarks
+            Dim vals As String = doc.Returns
+
+            Return $"
+{head}
+
+## description
+
+{desc}
+
+## returns
+
+{vals}
+
+## declares
+
+let <code>{api.name}</code> as function({params}) -> ``{returns.JoinBy("|")}`` {{{vbCrLf & vbCrLf}
  ```
     # 
     # .NET clr API information 
@@ -62,7 +85,14 @@ Namespace LspMarkdown
     #
     return call R-sharp.interop_[{api.ToString}](...);
 ```
-}}"
+}}
+    
+## example
+    
+```r
+{doc.example}
+```
+    "
         End Function
 
         <Extension>

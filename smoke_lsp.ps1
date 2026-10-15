@@ -17,10 +17,9 @@ $psi.UseShellExecute = $false
 $proc = [System.Diagnostics.Process]::Start($psi)
 $stdin = $proc.StandardInput
 $out = $proc.StandardOutput.BaseStream
-
-$stderr = New-Object System.Collections.ArrayList
-$proc.add_ErrorDataReceived({ param($s, $e) if ($null -ne $e.Data) { [void]$stderr.Add($e.Data) } })
-$proc.BeginErrorReadLine()
+# drain stderr on a background task: the server traces every message and a full
+# pipe buffer would otherwise deadlock the process
+$stderrTask = $proc.StandardError.ReadToEndAsync()
 
 function Send-Message($msg) {
     $json = $msg | ConvertTo-Json -Depth 32 -Compress
@@ -59,13 +58,18 @@ function Read-Message {
     return ([System.Text.Encoding]::UTF8.GetString($body, 0, $read) | ConvertFrom-Json)
 }
 
+# a json null / missing array is "zero elements", unlike @($null).Count
+function Count-Of($x) {
+    if ($null -eq $x) { return 0 }
+    return @($x).Count
+}
+
 $script = @(
     'add <- function(a, b) {'
-    '    return(a + b)'
+    '    a + b'
     '}'
     ''
-    'x = 1 + 2'
-    'print(add(x, 3))'
+    'print(add(1, 2))'
 ) -join "`n"
 
 $uri = 'file:///test.r'
@@ -92,7 +96,6 @@ Send-Message @{
     params  = @{ processId = $PID; rootUri = $null; capabilities = @{} }
 }
 $init = Read-Message
-
 Check 'initialize: hoverProvider' ($init.result.capabilities.hoverProvider -eq $true) ($init | ConvertTo-Json -Depth 8 -Compress)
 Check 'initialize: completionProvider' ($null -ne $init.result.capabilities.completionProvider) ''
 Check 'initialize: signatureHelpProvider' ($null -ne $init.result.capabilities.signatureHelpProvider) ''
@@ -106,37 +109,48 @@ Send-Message @{
     params  = @{ textDocument = @{ uri = $uri; languageId = 'r'; version = 1; text = $script } }
 }
 
-# --- hover over 'print' on line 5 (0-based), character 2 --------------------
+# --- how many global functions did the interpreter expose? ------------------
+Send-Message @{ jsonrpc = '2.0'; id = 90; method = 'workspace/symbol'; params = @{ query = '' } }
+$ws = Read-Message
+$nWs = Count-Of $ws.result
+Write-Host ('  [info] workspace/symbol (global functions) count=' + $nWs)
+if ($nWs -gt 0) {
+    Write-Host ('  [info] first names: ' + ((@($ws.result) | Select-Object -First 8 | ForEach-Object { $_.name }) -join ', '))
+}
+
+# --- hover over 'print' on line 4 (0-based), character 2 --------------------
 Send-Message @{
     jsonrpc = '2.0'
     id      = 2
     method  = 'textDocument/hover'
-    params  = @{ textDocument = @{ uri = $uri }; position = @{ line = 5; character = 2 } }
+    params  = @{ textDocument = @{ uri = $uri }; position = @{ line = 4; character = 2 } }
 }
 $hover = Read-Message
-$hoverValue = $hover.result.contents.value
-Check 'hover @ print' (-not [string]::IsNullOrEmpty($hoverValue)) ($hover | ConvertTo-Json -Depth 8 -Compress)
+Check 'hover @ print' ($null -ne $hover.result -and -not [string]::IsNullOrEmpty($hover.result.contents.value)) ($hover | ConvertTo-Json -Depth 8 -Compress)
+if ($null -ne $hover.result) {
+    Write-Host ('  [info] hover markdown head: ' + ($hover.result.contents.value -split "`r?`n")[0])
+}
 
 # --- completion with an empty prefix (all items) ---------------------------
 Send-Message @{
     jsonrpc = '2.0'
     id      = 3
     method  = 'textDocument/completion'
-    params  = @{ textDocument = @{ uri = $uri }; position = @{ line = 5; character = 10 } }
+    params  = @{ textDocument = @{ uri = $uri }; position = @{ line = 4; character = 6 } }
 }
 $compAll = Read-Message
-$nAll = @($compAll.result).Count
+$nAll = Count-Of $compAll.result
 Check 'completion (empty prefix)' ($nAll -gt 0) ('count=' + $nAll)
 
-# --- completion filtered by prefix 'ad' ------------------------------------
+# --- completion filtered by prefix 'pr' ------------------------------------
 Send-Message @{
     jsonrpc = '2.0'
     id      = 4
     method  = 'textDocument/completion'
-    params  = @{ textDocument = @{ uri = $uri }; position = @{ line = 5; character = 8 } }
+    params  = @{ textDocument = @{ uri = $uri }; position = @{ line = 4; character = 7 } }
 }
 $compPre = Read-Message
-Write-Host ('  [info] completion (prefix "ad") count=' + @($compPre.result).Count)
+Write-Host ('  [info] completion (prefix "pr") count=' + (Count-Of $compPre.result))
 
 # --- documentSymbol --------------------------------------------------------
 Send-Message @{
@@ -146,42 +160,65 @@ Send-Message @{
     params  = @{ textDocument = @{ uri = $uri } }
 }
 $sym = Read-Message
-$nSym = @($sym.result).Count
+$nSym = Count-Of $sym.result
 $symNames = (@($sym.result) | ForEach-Object { $_.name }) -join ', '
 Check 'documentSymbol' ($nSym -gt 0) ('count=' + $nSym)
 Write-Host ('  [info] documentSymbol names: ' + $symNames)
 
-# --- definition of 'add' used on line 5 ------------------------------------
+# --- definition of 'add' used on line 4 ------------------------------------
 Send-Message @{
     jsonrpc = '2.0'
     id      = 6
     method  = 'textDocument/definition'
-    params  = @{ textDocument = @{ uri = $uri }; position = @{ line = 5; character = 7 } }
+    params  = @{ textDocument = @{ uri = $uri }; position = @{ line = 4; character = 7 } }
 }
 $def = Read-Message
-$nDef = @($def.result).Count
+$nDef = Count-Of $def.result
 Check 'definition @ add' ($nDef -gt 0) ($def | ConvertTo-Json -Depth 8 -Compress)
+if ($nDef -gt 0) {
+    Write-Host ('  [info] definition line=' + $def.result[0].range.start.line)
+}
 
 # --- signature help inside add( --------------------------------------------
 Send-Message @{
     jsonrpc = '2.0'
     id      = 7
     method  = 'textDocument/signatureHelp'
-    params  = @{ textDocument = @{ uri = $uri }; position = @{ line = 5; character = 10 } }
+    params  = @{ textDocument = @{ uri = $uri }; position = @{ line = 4; character = 10 } }
 }
 $sig = Read-Message
-$nSig = @($sig.result.signatures).Count
+$nSig = Count-Of $sig.result.signatures
 Check 'signatureHelp @ add(' ($nSig -gt 0) ($sig | ConvertTo-Json -Depth 8 -Compress)
+if ($nSig -gt 0) {
+    Write-Host ('  [info] signature: ' + $sig.result.signatures[0].label + '  activeParameter=' + $sig.result.activeParameter)
+}
 
 # --- unknown method must return -32601 ------------------------------------
 Send-Message @{ jsonrpc = '2.0'; id = 8; method = 'textDocument/doesNotExist'; params = @{} }
 $unknown = Read-Message
 Check 'unknown method -> -32601' ($unknown.error.code -eq -32601) ($unknown | ConvertTo-Json -Depth 8 -Compress)
 
+# --- didChange should replace the cached document -------------------------
+$script2 = @('solo <- function() { 1 }') -join "`n"
+Send-Message @{
+    jsonrpc = '2.0'
+    method  = 'textDocument/didChange'
+    params  = @{ textDocument = @{ uri = $uri; version = 2 }; contentChanges = @(@{ text = $script2 }) }
+}
+Send-Message @{
+    jsonrpc = '2.0'
+    id      = 10
+    method  = 'textDocument/definition'
+    params  = @{ textDocument = @{ uri = $uri }; position = @{ line = 0; character = 1 } }
+}
+$def2 = Read-Message
+$nDef2 = Count-Of $def2.result
+Check 'didChange replaced the document (solo found)' ($nDef2 -gt 0) ($def2 | ConvertTo-Json -Depth 8 -Compress)
+
 # --- shutdown / exit -------------------------------------------------------
 Send-Message @{ jsonrpc = '2.0'; id = 9; method = 'shutdown'; params = $null }
 $sd = Read-Message
-Check 'shutdown' ($null -ne $sd) ($sd | ConvertTo-Json -Depth 8 -Compress)
+Check 'shutdown replies (result null)' ($null -ne $sd -and $null -eq $sd.result) ($sd | ConvertTo-Json -Depth 8 -Compress)
 
 Send-Message @{ jsonrpc = '2.0'; method = 'exit' }
 [void]$proc.WaitForExit(5000)
@@ -195,7 +232,13 @@ else {
 }
 
 Write-Host ''
-Write-Host '--- server stderr (last 15 lines) ---'
-$stderr | Select-Object -Last 15 | ForEach-Object { Write-Host $_ }
+Write-Host '--- server stderr ---'
+$stderrText = $stderrTask.Result
+if ([string]::IsNullOrEmpty($stderrText)) {
+    Write-Host '(empty)'
+}
+else {
+    ($stderrText -split "`r?`n") | Select-Object -First 40 | ForEach-Object { Write-Host $_ }
+}
 
 if (-not $proc.HasExited) { $proc.Kill() }

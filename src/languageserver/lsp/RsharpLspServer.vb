@@ -54,13 +54,47 @@ Public Class RsharpLspServer
     Private stdout As Stream
     Private shutdownRequested As Boolean = False
 
+    ''' <summary>
+    ''' the transport streams injected by an in-process host. when both are
+    ''' <c>Nothing</c> the server falls back to the process stdin/stdout, which is
+    ''' the stdio mode used by the lsp.vbproj command line host.
+    ''' </summary>
+    Private ReadOnly inputOverride As Stream
+    Private ReadOnly outputOverride As Stream
+
+    ''' <summary>
+    ''' stdio mode (default): the server reads the process stdin and writes the
+    ''' process stdout. this is the mode used by the lsp.vbproj command line host.
+    ''' </summary>
     Sub New(Optional trace As TextWriter = Nothing)
+        Me.New(Nothing, Nothing, trace)
+    End Sub
+
+    ''' <summary>
+    ''' in-process mode: the caller may inject the transport streams (pass
+    ''' <c>Nothing</c> to fall back to the console) and, more importantly, drive the
+    ''' server directly through <see cref="HandleMessageAsync"/> without ever
+    ''' running the blocking stdio read loop.
+    ''' </summary>
+    ''' <param name="input">the stream the read loop consumes, or Nothing for the process stdin.</param>
+    ''' <param name="output">the stream responses are written to, or Nothing for the process stdout.</param>
+    ''' <param name="trace">the log sink; Nothing falls back to the process stderr.</param>
+    Sub New(input As Stream, output As Stream, Optional trace As TextWriter = Nothing)
+        Me.inputOverride = input
+        Me.outputOverride = output
         Me.trace = If(trace, Console.Error)
 
         R = RInterpreter.Rsharp
+
         ' redirect the R# interpreter output to stderr so it never pollutes the
-        ' LSP message frames that travel on stdout
-        R.RedirectOutput(New StreamWriter(Console.OpenStandardError, leaveOpen:=True) With {.AutoFlush = True}, OutputEnvironments.Console)
+        ' LSP message frames that travel on stdout. a GUI host has no console
+        ' attached, so opening the standard error stream may fail: it is only a
+        ' diagnostic channel and must never take the server down.
+        Try
+            R.RedirectOutput(New StreamWriter(Console.OpenStandardError, leaveOpen:=True) With {.AutoFlush = True}, OutputEnvironments.Console)
+        Catch ex As Exception
+            Me.trace.WriteLine("[rsharp-lsp] RedirectOutput warning: " & ex.Message)
+        End Try
 
         Try
             R.LoadLibrary("REnv", ignoreMissingStartupPackages:=True)
@@ -108,8 +142,9 @@ Public Class RsharpLspServer
     ''' run the json-rpc message loop until the peer disconnects or asks to exit.
     ''' </summary>
     Public Async Function RunAsync() As Task
-        stdin = New BomStrippingStream(Console.OpenStandardInput)
-        stdout = Console.OpenStandardOutput
+        ' the injected streams win; stdio is only the fallback for the CLI host
+        stdin = If(inputOverride, New BomStrippingStream(Console.OpenStandardInput))
+        stdout = If(outputOverride, Console.OpenStandardOutput)
 
         Me.trace.WriteLine("[rsharp-lsp] server started, listening on stdio")
 
@@ -130,11 +165,20 @@ Public Class RsharpLspServer
         Me.trace.WriteLine("[rsharp-lsp] server stopped")
     End Function
 
-    Private Async Function Dispatch(msg As jsobj) As Task
+    ''' <summary>
+    ''' handle a single json-rpc message and return the response object to send
+    ''' back, or <c>Nothing</c> for notifications / messages that need no reply.
+    ''' this is the transport agnostic entry point shared by the stdio read loop
+    ''' (<see cref="RunAsync"/>) and by an in-process host (such as the WebView2 /
+    ''' Monaco editor) that drives the server message by message.
+    ''' </summary>
+    Public Function HandleMessageAsync(msg As jsobj) As Task(Of jsobj)
         Dim method As String = msg.Str("method")
         Dim id As JsonElement = msg("id")
         Dim isRequest As Boolean = Not (id Is Nothing)
         Dim result As JsonElement = Nothing
+        Dim failCode As Integer = 0
+        Dim failMessage As String = Nothing
 
         Me.trace.WriteLine($"[rsharp-lsp] <= {method} request={isRequest}")
 
@@ -148,7 +192,6 @@ Public Class RsharpLspServer
                 result = Nothing
             Case "exit"
                 shutdownRequested = True
-                Return
             Case "textDocument/didOpen"
                 OnDidOpen(DirectCast(msg("params"), jsobj))
             Case "textDocument/didChange"
@@ -169,19 +212,31 @@ Public Class RsharpLspServer
                 result = OnWorkspaceSymbol(DirectCast(msg("params"), jsobj))
             Case Else
                 If isRequest Then
-                    result = JsonRpc.MakeError(id, -32601, "Method not found: " & method)
+                    failCode = -32601
+                    failMessage = "Method not found: " & method
                 End If
         End Select
 
-        If isRequest Then
-            Dim response As jsobj
+        If Not isRequest Then
+            ' notifications never get a response
+            Return Task.FromResult(Of jsobj)(Nothing)
+        ElseIf failMessage IsNot Nothing Then
+            Return Task.FromResult(Of jsobj)(JsonRpc.MakeError(id, failCode, failMessage))
+        Else
+            Return Task.FromResult(Of jsobj)(JsonRpc.MakeResponse(id, result))
+        End If
+    End Function
 
-            If result Is Nothing Then
-                response = JsonRpc.MakeResponse(id, Nothing)
-            Else
-                response = JsonRpc.MakeResponse(id, result)
-            End If
+    ''' <summary>
+    ''' stdio driver: read one message at a time from <see cref="stdin"/>, let
+    ''' <see cref="HandleMessageAsync"/> build the response and write it back to
+    ''' <see cref="stdout"/>. an in-process host skips this method entirely.
+    ''' </summary>
+    Private Async Function Dispatch(msg As jsobj) As Task
+        Dim method As String = msg.Str("method")
+        Dim response As jsobj = Await HandleMessageAsync(msg)
 
+        If response IsNot Nothing Then
             Await JsonRpc.SendMessageAsync(stdout, response)
             Me.trace.WriteLine($"[rsharp-lsp] => {method} sent")
         End If

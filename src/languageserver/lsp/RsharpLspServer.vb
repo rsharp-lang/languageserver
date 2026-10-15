@@ -5,6 +5,7 @@ Imports Microsoft.VisualBasic.MIME.application.json
 Imports Microsoft.VisualBasic.MIME.application.json.Javascript
 Imports SMRUCC.Rsharp.Development
 Imports SMRUCC.Rsharp.Development.CodeAnalysis
+Imports SMRUCC.Rsharp.Development.Package
 Imports SMRUCC.Rsharp.Interpreter
 Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine
 Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine.ExpressionSymbols.Closure
@@ -326,15 +327,21 @@ Public Class RsharpLspServer
 
     Private Function OnHover(params As jsobj) As jsobj
         If params Is Nothing Then Return Nothing
+
         Dim uri = TextOf(DirectCast(params("textDocument"), jsobj)("uri"))
         Dim line = params.Int("position", "line")
         Dim col = params.Int("position", "character")
         Dim text = GetDoc(uri)
 
-        If text Is Nothing Then Return Nothing
+        If text Is Nothing Then
+            Return Nothing
+        End If
 
         Dim word = GetWordAt(text, line, col)
-        If String.IsNullOrEmpty(word) Then Return Nothing
+
+        If String.IsNullOrEmpty(word) Then
+            Return Nothing
+        End If
 
         Dim name = SimpleName(word)
         Dim sym = R.globalEnvir.FindFunction(name)
@@ -345,9 +352,15 @@ Public Class RsharpLspServer
         End If
 
         If sym IsNot Nothing Then
-            md = BuildHoverMarkdown(sym.value, name)
+            md = LspMarkdown.Method.BuildHoverMarkdown(sym.value, name)
         ElseIf rlang.KeywordSet.ContainsKey(name) Then
             md = rlang.KeywordSet(name)
+        Else
+            Dim pkg As PackageInfo = R.globalEnvir.packages.packageRepository.FindPackageInfo(name)
+
+            If pkg IsNot Nothing Then
+                md = LspMarkdown.Package.BuildHoverMarkdown(pkg)
+            End If
         End If
 
         If String.IsNullOrEmpty(md) Then
@@ -356,11 +369,13 @@ Public Class RsharpLspServer
             Dim localFunc = FindDocumentFunction(text, name)
 
             If localFunc IsNot Nothing Then
-                md = BuildHoverMarkdown(localFunc, name)
+                md = LspMarkdown.Method.BuildHoverMarkdown(localFunc, name)
             End If
         End If
 
-        If String.IsNullOrEmpty(md) Then Return Nothing
+        If String.IsNullOrEmpty(md) Then
+            Return Nothing
+        End If
 
         Dim contents = New jsobj()
         contents("kind") = New jsVal("markdown")
@@ -370,45 +385,6 @@ Public Class RsharpLspServer
         result("contents") = contents
 
         Return result
-    End Function
-
-    Private Function BuildHoverMarkdown(value As Object, name As String) As String
-        Dim sb As New StringBuilder
-
-        If TypeOf value Is RMethodInfo Then
-            Dim info = DirectCast(value, RMethodInfo)
-
-            sb.AppendLine("### ").Append(info.name).AppendLine()
-            If Not String.IsNullOrEmpty(info.namespace) Then
-                sb.AppendLine("**namespace:** " & info.namespace)
-                sb.AppendLine()
-            End If
-
-            If info.parameters IsNot Nothing AndAlso info.parameters.Length > 0 Then
-                sb.AppendLine("**Parameters:**")
-                For Each p As RMethodArgument In info.parameters
-                    sb.Append("- `").Append(p.name).Append("`")
-                    If p.type IsNot Nothing Then
-                        sb.Append(" : ").Append(p.type.ToString)
-                    End If
-                    sb.AppendLine()
-                Next
-            End If
-
-            sb.AppendLine()
-            sb.Append("**Returns:** ").Append(If(info.returns Is Nothing, "any", info.returns.ToString))
-        ElseIf TypeOf value Is DeclareNewFunction Then
-            ' reuse the existing markdown docs renderer for runtime R# functions
-            Dim md = ConsoleMarkdownPrinter.getMarkdownDocs(DirectCast(value, DeclareNewFunction))
-            If Not String.IsNullOrEmpty(md) Then
-                Return md
-            End If
-            sb.AppendLine("### ").Append(DirectCast(value, DeclareNewFunction).funcName).AppendLine()
-        Else
-            Return Nothing
-        End If
-
-        Return sb.ToString
     End Function
 
     ' ------------------------------------------------------------------

@@ -3,9 +3,11 @@ Imports System.Text
 Imports Microsoft.VisualBasic.ComponentModel.DataSourceModel
 Imports Microsoft.VisualBasic.MIME.application.json
 Imports Microsoft.VisualBasic.MIME.application.json.Javascript
+Imports roxygenNet
 Imports SMRUCC.Rsharp.Development
 Imports SMRUCC.Rsharp.Development.CodeAnalysis
 Imports SMRUCC.Rsharp.Development.Package
+Imports SMRUCC.Rsharp.Development.Package.File
 Imports SMRUCC.Rsharp.Interpreter
 Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine
 Imports SMRUCC.Rsharp.Interpreter.ExecuteEngine.ExpressionSymbols.Closure
@@ -18,6 +20,7 @@ Imports SMRUCC.Rsharp.Runtime.Interop
 Imports jsobj = Microsoft.VisualBasic.MIME.application.json.Javascript.JsonObject
 Imports jsVal = Microsoft.VisualBasic.MIME.application.json.Javascript.JsonValue
 Imports rlang = SMRUCC.Rsharp.Language
+Imports rtext = SMRUCC.Rsharp.Runtime.Components.Rscript
 
 ''' <summary>
 ''' An implementation of the Language Server Protocol for the R# scripting language.
@@ -473,11 +476,25 @@ Public Class RsharpLspServer
         If text Is Nothing Then Return arr
 
         Dim prog = Program.BuildProgram(text)
-        If prog Is Nothing Then Return arr
+
+        If prog Is Nothing Then
+            Return arr
+        End If
+
+        Dim docs As Dictionary(Of String, Document) = RoxygenDocument.ParseDocuments(rtext.FromText(text)) _
+            .GroupBy(Function(a) a.symbol_name) _
+            .ToDictionary(Function(a) a.Key,
+                          Function(a)
+                              Return a.First
+                          End Function)
 
         For Each fn In EnumerateTopLevelFunctions(prog)
             Call R.Set(fn.Name, fn.Value)
             Call arr.Add(MakeDocumentSymbol(fn.Name, fn.Value, text))
+
+            If fn.Value.GetType.IsInheritsFrom(GetType(SymbolExpression)) AndAlso docs.ContainsKey(fn.Name) Then
+                Call DirectCast(fn.Value, SymbolExpression).AddCustomAttribute(PackageLoader2.RsharpHelp, docs(fn.Name).GetJson)
+            End If
         Next
 
         Return arr

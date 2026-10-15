@@ -164,6 +164,7 @@ $nSym = Count-Of $sym.result
 $symNames = (@($sym.result) | ForEach-Object { $_.name }) -join ', '
 Check 'documentSymbol' ($nSym -gt 0) ('count=' + $nSym)
 Write-Host ('  [info] documentSymbol names: ' + $symNames)
+Write-Host ('  [info] documentSymbol raw: ' + ($sym | ConvertTo-Json -Depth 12 -Compress))
 
 # --- definition of 'add' used on line 4 ------------------------------------
 Send-Message @{
